@@ -1,0 +1,85 @@
+
+.note {
+    border: 1px solid black;
+    border-radius: 5px;
+    display: block;
+    position: fixed;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2em;
+    padding: 0;
+    margin: 0;
+}  
+
+.noteHead {
+    box-sizing: border-box;
+    background: none;
+    border: 0px solid black;
+    border-radius: 4px 4px 0px 0px;
+    height: 35px;
+    width: 100%;
+    display: block;
+
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.noteContent {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    padding: 5px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    margin: auto;
+    background: none;
+    border-radius: 5px;
+}
+
+.noteBody {
+    margin: 0;
+    padding: 0;
+}
+
+.newButton {
+    background-color: inherit;
+    image-rendering: crisp-edges;
+    image-resolution: from-image;
+    float: left;
+    width: 25px;
+    height: 25px;
+    margin: 5px;
+}
+
+
+.deleteButton {
+    background-color: inherit;
+    image-rendering: crisp-edges;
+    image-resolution: from-image;
+    float: right;
+    width: 25px;
+    height: 25px;
+    margin: 5px;
+}
+    .button:hover{
+        -webkit-filter: brightness(70%);
+    }
+
+
+input, textarea {
+    box-sizing: border-box;
+    resize: none;
+}
+
+.resize {
+    image-rendering: crisp-edges;
+    image-resolution: from-image;
+    position: relative;
+    margin: 2px;
+    padding: 0;
+    cursor: se-resize;
+    float: right;
+    top: -16px;
+}

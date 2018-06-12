@@ -1,0 +1,9 @@
+<div class="note" [ngStyle]="setStyles()">
+    <div class="noteHead" (mousedown)="dragStart($event)" [style.background-color]="headColor"></div>
+    <div class="noteBody" [style.height]="note.height-40 + 'px'">
+        <textarea class="noteContent" [(ngModel)]="note.content"></textarea>
+    </div>
+    <img class="resize" src="assets/resize.png" (mousedown)="resizeStart($event)"/>
+</div>
+
+

@@ -1,0 +1,5 @@
+<div *ngFor="let note of notes" (onmousemove)="mouseMove()">
+    <app-note [note]="note"
+         (onDrag)="noteDragStart($event)"
+        (onResize)="noteResizeStart($event)"></app-note>
+</div>
