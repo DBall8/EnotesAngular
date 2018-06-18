@@ -1,5 +1,6 @@
 import { Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
 
+import { NoteService } from '../note.service';
 import { Note } from '../note';
 import { ColorChart } from '../ColorChart';
 
@@ -20,12 +21,9 @@ export class NoteComponent implements OnInit {
 
     @Output() onDrag = new EventEmitter<Object>(); // event for when the user moves the note
     @Output() onResize = new EventEmitter<Object>(); // event for when the user resizes the note
-    @Output() onAdd = new EventEmitter<void>(); // user adds a note event
-    @Output() onChange = new EventEmitter<void>(); // user changes this note event
-    @Output() onDelete = new EventEmitter<String>(); // user deletes this note event
     @Output() onRightClick = new EventEmitter<Object>(); // user right clicks this note event
 
-  constructor() { }
+  constructor(private noteService: NoteService) { }
 
 
     ngOnInit() {
@@ -33,14 +31,14 @@ export class NoteComponent implements OnInit {
 
     /* Adds a new note */
     addNote() {
-        this.onAdd.emit(); // send the add note request to the note page component
+        this.noteService.addNote();
     }
 
     /* Deletes a note */
     deleteNote() {
         // Confirm the delete
         if (window.confirm("Are you sure you want to delete this note?")) {
-            this.onDelete.emit(this.note.id); // send the delete event to the note page component
+            this.noteService.deleteNote(this.note.id);
         }
     }
 
@@ -92,7 +90,7 @@ export class NoteComponent implements OnInit {
     /* Marks the note as unsaved whenever a change is made */
     keyPressed() {
         this.note.saved = false;
-        this.onChange.emit(); // tell the note page that a change has been made
+        this.noteService.changesSaved = false;
     }
 
     /* Starts a note's right click event

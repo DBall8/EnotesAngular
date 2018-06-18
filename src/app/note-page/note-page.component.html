@@ -9,19 +9,15 @@
 </h1>
 
 <!-- Notes -->
-<div *ngFor="let note of notes" (onmousemove)="mouseMove()">
+<div *ngFor="let note of noteService.notes" (onmousemove)="mouseMove()">
     <app-note [note]="note"
         (mousedown)="selectNote(note)"
         (onDrag)="noteDragStart($event)"
         (onResize)="noteResizeStart($event)"
-        (onAdd)="addNote()"
-        (onDelete)="deleteNote($event)"
-        (onChange)="noteChanged()"
         (onRightClick)="noteRightClicked($event)"></app-note>
 </div>
 
-<app-right-click-menu [display]="rcmDisplay"
-    (onChange)="noteChanged()"></app-right-click-menu>
+<app-right-click-menu [display]="rcmDisplay"></app-right-click-menu>
 
 
 
