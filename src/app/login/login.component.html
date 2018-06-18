@@ -1,6 +1,6 @@
 
 <div class="loginPanel">
-	<h1 class="loginTitle"> Log in </h1>
+	<h1 class="loginTitle"> {{isLogin? 'Log In': 'Create a new account'}} </h1>
 	<div class="loginError">
 		{{errorText}}
 	</div>
@@ -10,13 +10,17 @@
 			<input #Username class="loginInput" type="text" (keyup)="submit($event.key)" /><br />
 			<label>Password:</label><br />
 			<input #Password class="loginInput" type="password" (keyup)="submit($event.key)" /><br />
+            <div [style.display]="isLogin? 'none': 'block'">
+                <label>Confirm password:</label><br />
+                <input #ConfirmPassword class="loginInput" type="password"/>
+            </div>
 			<input class="checkbox" type="checkbox" #stayLogged />Stay logged in
 			<br />
-			<button class="loginButton" type="button" (click)="login(Username.value, Password.value, stayLogged.checked)">Log in</button>
+			<button class="loginButton" type="button" (click)="login(Username.value, Password.value, ConfirmPassword.value, stayLogged.checked)">{{isLogin? 'Log In': 'Create Account'}}</button>
 		</form>
 		<br />
 						
-		<span class="bottomSpan">New to ENotes?<br />
-		<a class="bottomLink"> Create a new account!</a></span>
+		<span class="bottomSpan">{{isLogin? 'New to ENotes?': 'Already have an account?'}}<br [style.display]="isLogin? 'display': 'none'" />
+		<a class="bottomLink" href="/NO" (click)="$event.preventDefault(); isLogin=!isLogin;"> {{isLogin? 'Create a new account!': 'Log in!'}}</a></span>
 	</div>
 </div>

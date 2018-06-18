@@ -1,5 +1,27 @@
+
+<h1 class="title"><span class="welcomeMessage">Welcome {{username}}!</span>
+    <div class="rightFloat optionsContainer">
+        <input type="image" src="assets/refreshIm.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
+        <input type="image" src="assets/gearIm.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
+        <app-options-menu [visible]="optionsVisible"></app-options-menu>
+    </div>
+
+</h1>
+
+<!-- Notes -->
 <div *ngFor="let note of notes" (onmousemove)="mouseMove()">
     <app-note [note]="note"
-         (onDrag)="noteDragStart($event)"
-        (onResize)="noteResizeStart($event)"></app-note>
+        (mousedown)="selectNote(note)"
+        (onDrag)="noteDragStart($event)"
+        (onResize)="noteResizeStart($event)"
+        (onAdd)="addNote()"
+        (onDelete)="deleteNote($event)"
+        (onChange)="noteChanged()"
+        (onRightClick)="noteRightClicked($event)"></app-note>
 </div>
+
+<app-right-click-menu [display]="rcmDisplay"
+    (onChange)="noteChanged()"></app-right-click-menu>
+
+
+

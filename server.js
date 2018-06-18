@@ -84,15 +84,6 @@ function requireLogin(req, res, next) {
     }
 }
 
-app.get('/', requireLogin, (req, res) => {
-    sendFile(res, './dist/notes/index.html');
-})
-
-app.get('/login', (req, res) => {
-    sendFile(res, './dist/notes/index.html');
-})
-
-
 app.get('/api', requireLogin, (req, res) => {
     getNotes(req, res);
 })
@@ -123,22 +114,36 @@ app.post('/newuser', (req, res) => {
 
 app.all("*", (req, res, next) => {
 
+    var uri = url.parse(req.url);
+    var path =  './dist/notes' + uri.pathname
+
+    if(uri.pathname !== '/' && fs.existsSync(path)){
+        sendFile(res, path);
+    }
+    else{
+        sendFile(res, './dist/notes/index.html');
+    }
+
+    /* OLD
+    console.log("Here");
     var uri = url.parse(req.url)
     // seperate the file name from the extension
     pathLength = uri.pathname.length;
-var fileType = uri.pathname.split('.').pop(); // file extension
+    var fileType = uri.pathname.split('.').pop(); // file extension
 
-// send the file as a the appropriate file type
-switch (fileType) {
-    case 'css':
-        res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/css');
-        break;
-    case 'js':
-        res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/javascript');
-        break;
-    default:
-        res.sendFile(__dirname + '/dist/notes' + uri.pathname);
-}
+    // send the file as a the appropriate file type
+    switch (fileType) {
+        case 'css':
+            res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/css');
+            break;
+        case 'js':
+            res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/javascript');
+            break;
+        default:
+            res.sendFile(__dirname + '/dist/notes' + uri.pathname);
+    }
+    */
+    
 })
 
 var activeClients = {};
@@ -158,7 +163,6 @@ io.on('connect', (socket) => {
         console.log(socket.id + " disconnected.");
         if (activeClients[socket.id]) {
             delete activeClients[socket.id]
-            console.log(activeClients)
         }
     })
 })
@@ -359,7 +363,8 @@ function addNote(req, res) {
 }
 
 // delete a note from the database
-function deleteNote(req, res){
+    function deleteNote(req, res){
+    console.log(req.body);
     var input = JSON.parse(req.body);
 
     // get key stored with sessionID
@@ -407,7 +412,7 @@ function updateNote(req, res){
             if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
                 activeClients[key].socket.emit("update", req.body);
             }
-            }))
+        }))
         
 
             res.writeHead(200)

@@ -1,0 +1,44 @@
+.mainPageButton {
+    margin: 10px 10px 0px 10px;
+    display: inline-block;
+    background: white;
+    padding: 5px;
+    border: 2px solid #7f7f7f;
+}
+
+.button:hover {
+    -webkit-filter: brightness(70%);
+}
+
+.App{
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+}
+
+.title{
+  background: black;
+  color: white;
+
+  border: 10px solid gray;
+  border-right: 0px;
+  border-left: 0px;
+
+  height: 65px;
+}
+
+.welcomeMessage {
+    padding: 10px 50px 10px 50px;
+    display: inline-block
+}
+
+.rightFloat{
+  float: right;
+  display: inline-block;
+}
+
+.optionsContainer{
+    max-height: 100px;
+    width: 200px;
+}
