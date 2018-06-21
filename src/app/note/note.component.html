@@ -8,7 +8,12 @@
 
     <!-- Note Body -->
     <div class="noteBody" [style.height]="note.height-40 + 'px'">
-        <textarea #contentArea class="noteContent" [(ngModel)]="note.content" (keydown)="keyDown($event)"></textarea>
+        <textarea #contentArea 
+            class="noteContent" 
+            [(ngModel)]="note.content"
+            [style.font-size]="note.fontSize + 'px'"
+            [style.font-family]="note.font + ', Helvetica, sans-serif'"
+            (keydown)="keyDown($event)"></textarea>
     </div>
     <img class="resize" src="assets/resize.png" (mousedown)="resizeStart($event)"/>
 </div>

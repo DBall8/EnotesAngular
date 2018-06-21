@@ -7,6 +7,8 @@ export class Note{
     height: number;
     selected: boolean;
     zindex: number;
+    fontSize: number;
+    font: String;
     saved: boolean;
     colors;
 
@@ -18,6 +20,8 @@ export class Note{
         this.width = width;
         this.height = height;
         this.selected = false;
+        this.fontSize = 12;
+        this.font = "Arial";
         this.zindex = 9000;
         this.saved = true;
         this.colors = colors;
