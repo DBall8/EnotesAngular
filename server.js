@@ -21,8 +21,8 @@ else {
 // open the database
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
-    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252), hash VARCHAR(252), salt VARCHAR(252), key VARCHAR(252))');
-    db.query('CREATE TABLE IF NOT EXISTS notes (key VARCHAR(252), tag VARCHAR(252), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, zindex INTEGER, colors VARCHAR(512))')
+    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252), hash VARCHAR(252), salt VARCHAR(252), key VARCHAR(252) PRIMARY KEY)');
+db.query('CREATE TABLE IF NOT EXISTS notes (key VARCHAR(252) REFERENCES users(key), tag VARCHAR(252), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, zindex INTEGER, colors VARCHAR(512))')
     console.log("Successfully connected to database.");
 }, (err) =>{
     console.error("Failed to connect to database.")
@@ -123,26 +123,6 @@ app.all("*", (req, res, next) => {
     else{
         sendFile(res, './dist/notes/index.html');
     }
-
-    /* OLD
-    console.log("Here");
-    var uri = url.parse(req.url)
-    // seperate the file name from the extension
-    pathLength = uri.pathname.length;
-    var fileType = uri.pathname.split('.').pop(); // file extension
-
-    // send the file as a the appropriate file type
-    switch (fileType) {
-        case 'css':
-            res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/css');
-            break;
-        case 'js':
-            res.sendFile(__dirname + '/dist/notes' + uri.pathname, 'text/javascript');
-            break;
-        default:
-            res.sendFile(__dirname + '/dist/notes' + uri.pathname);
-    }
-    */
     
 })
 
