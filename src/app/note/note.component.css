@@ -71,6 +71,7 @@
 input, textarea {
     box-sizing: border-box;
     resize: none;
+    tab-size: 4;
 }
 
 .resize {

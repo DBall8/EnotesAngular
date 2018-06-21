@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Input, Output, ViewChild, ElementRef } from '@angular/core';
 
 import { NoteService } from '../note.service';
 import { Note } from '../note';
@@ -22,6 +22,8 @@ export class NoteComponent implements OnInit {
     @Output() onDrag = new EventEmitter<Object>(); // event for when the user moves the note
     @Output() onResize = new EventEmitter<Object>(); // event for when the user resizes the note
     @Output() onRightClick = new EventEmitter<Object>(); // user right clicks this note event
+
+    @ViewChild('contentArea') contentArea: ElementRef;
 
   constructor(private noteService: NoteService) { }
 
@@ -88,7 +90,25 @@ export class NoteComponent implements OnInit {
     }
 
     /* Marks the note as unsaved whenever a change is made */
-    keyPressed() {
+    keyDown(e) {
+
+        // override tab
+        if (e.key == 'Tab') {
+            // prevent default behavior
+            e.preventDefault();
+            
+            var cursorStart = this.contentArea.nativeElement.selectionStart;
+            var cursorEnd = this.contentArea.nativeElement.selectionEnd;
+
+            var text = this.note.content;
+            this.note.content = text.substring(0, cursorStart) + '\t' + text.substring(cursorEnd, text.length);
+
+            setTimeout(() => {
+                this.contentArea.nativeElement.selectionStart = cursorStart + 1;
+                this.contentArea.nativeElement.selectionEnd = cursorStart + 1;
+            })
+            
+        }
         this.note.saved = false;
         this.noteService.changesSaved = false;
     }
@@ -98,10 +118,16 @@ export class NoteComponent implements OnInit {
     */
     rightClick(e) {
         e.preventDefault();
+
+        var el = this.contentArea.nativeElement;
+        var text = this.note.content.substring(el.selectionStart, el.selectionEnd)
+        console.log(text)
+
         this.onRightClick.emit({
             x: e.clientX,
             y: e.clientY,
-            note: this.note
+            note: this.note,
+            text: text
         });
     }
 }

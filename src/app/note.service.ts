@@ -18,8 +18,6 @@ const httpHeaders: HttpHeaders = new HttpHeaders({
   providedIn: 'root'
 })
 export class NoteService {
-
-    DEBUG: boolean = false;
     
     notes: Note[] = [];
 
@@ -38,7 +36,7 @@ export class NoteService {
     constructor(private http: HttpClient, private router: Router) { }
 
     getNotes() {
-        if (this.DEBUG) {
+        if (Config.DEBUG) {
             this.notes = this.dummyNotes;
         }
         else {
@@ -68,6 +66,8 @@ export class NoteService {
     @param ns An array of objects representing notes
     */
     loadNotes(ns: any[]) {
+
+        this.notes = [];
 
         // If the response did not contain any notes, simply add a note and return
         if (ns.length < 1) {
@@ -101,15 +101,15 @@ export class NoteService {
         });
     }
 
+    /* Adds a new note and sends it to the database to be added */
     addNote() {
-
         // Create a new note isntance that is empty
         var note: Note = new Note('note-' + new Date().getTime(), "", 200, 200, 200, 200, ColorChart.yellow);
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);
 
-        if (!this.DEBUG) {
+        if (!Config.DEBUG) {
             // send a request to add the note to the database
             this.http.request("POST", "/api", {
                 observe: 'response', body: JSON.stringify({
@@ -141,9 +141,12 @@ export class NoteService {
         }
     }
 
+    /* Sends a note to the server to update the database
+    @param note The note to send
+    */
     updateNote(note: Note) {
 
-        if (!this.DEBUG) {
+        if (!Config.DEBUG) {
             note.saved = true; // mark the note as saved
             // send an update request
             this.http.request("PUT", "/api", {
@@ -177,11 +180,14 @@ export class NoteService {
 
     }
 
+    /* Deletes a note locally and from the database
+    @param noteID The ID of the note to delete
+    */
     deleteNote(noteID: String) {
 
         this.removeNote(noteID); // remove the note locally
 
-        if (!this.DEBUG) {
+        if (!Config.DEBUG) {
             // Send a delete request to the server
             this.http.request("DELETE", "/api", {
                 body: JSON.stringify({

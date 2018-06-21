@@ -1,14 +1,14 @@
 <div class="note" [ngStyle]="setStyles()" (contextmenu)="rightClick($event)">
     <!-- Note Head -->
     <div class="noteHead" (mousedown)="dragStart($event)" [style.background-color]="setHeadColor(note.selected)">
-        <input type="image" src="assets/plusIm.png" alt="New" class="newButton button" (click)="addNote()" />
-        <input type="image" src="assets/delIm.png" alt="Delete" class="deleteButton button"
+        <input type="image" src="assets/plus.png" alt="New" class="newButton button" (click)="addNote()" />
+        <input type="image" src="assets/x.png" alt="Delete" class="deleteButton button"
             (click)="deleteNote()"/>
     </div>
 
     <!-- Note Body -->
     <div class="noteBody" [style.height]="note.height-40 + 'px'">
-        <textarea class="noteContent" [(ngModel)]="note.content" (keyup)="keyPressed()"></textarea>
+        <textarea #contentArea class="noteContent" [(ngModel)]="note.content" (keydown)="keyDown($event)"></textarea>
     </div>
     <img class="resize" src="assets/resize.png" (mousedown)="resizeStart($event)"/>
 </div>

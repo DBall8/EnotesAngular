@@ -19,12 +19,6 @@ A component for managing a list of user's notes
 })
 export class NotePageComponent implements OnInit {
 
-    username: String = ""; // Username of loggin in user
-    socketID = ''; // An id to user on requests to identify this client socket
-    socket; // a socket for updating notes when they update in the database
-
-    notes: Note[] = []; // loaded notes
-
     optionsVisible: boolean = false; //boolean for opening or closing the options menu
 
     // options for controlling the custom right click menu
@@ -32,6 +26,7 @@ export class NotePageComponent implements OnInit {
         visible: false, // hide or show the menu
         x: 0, // x position
         y: 0, // y position
+        text: "", // the highlighted text at the time of the right click
         subMenu: '', // which submenu is open
         note: null // the note the menu was opened on
     };
@@ -221,6 +216,7 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.y = e.y;
         // make the note visible to the rcm
         this.rcmDisplay.note = e.note;
+        this.rcmDisplay.text = e.text;
         // reset its submenu
         this.rcmDisplay.subMenu = '';
         // display the rcm
@@ -228,7 +224,9 @@ export class NotePageComponent implements OnInit {
     }
 
     // Reloads the notes from the server
-    refresh() { }
+    refresh() {
+        this.noteService.getNotes();
+    }
 
     // Opens and closes the options menu
     toggleOptions(e) {

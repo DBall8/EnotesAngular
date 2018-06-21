@@ -1,8 +1,8 @@
 
-<h1 class="title"><span class="welcomeMessage">Welcome {{username}}!</span>
+<h1 class="title"><span class="welcomeMessage">Welcome {{noteService.username}}!</span>
     <div class="rightFloat optionsContainer">
-        <input type="image" src="assets/refreshIm.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
-        <input type="image" src="assets/gearIm.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
+        <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
+        <input type="image" src="assets/gear.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
         <app-options-menu [visible]="optionsVisible"></app-options-menu>
     </div>
 
