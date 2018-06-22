@@ -234,6 +234,12 @@ export class NotePageComponent implements OnInit {
         this.optionsVisible = !this.optionsVisible
     }
 
-    
+    getUsername() {
+        return this.noteService.username;
+    }
+
+    getNotes() {
+        return this.noteService.notes;
+    }
 
 }

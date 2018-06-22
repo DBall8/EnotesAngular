@@ -1,5 +1,5 @@
 
-<h1 class="title"><span class="welcomeMessage">Welcome {{noteService.username}}!</span>
+<h1 class="title"><span class="welcomeMessage">Welcome {{getUsername()}}!</span>
     <div class="rightFloat optionsContainer">
         <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
         <input type="image" src="assets/gear.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
@@ -9,7 +9,7 @@
 </h1>
 
 <!-- Notes -->
-<div *ngFor="let note of noteService.notes" (onmousemove)="mouseMove()">
+<div *ngFor="let note of getNotes()" (onmousemove)="mouseMove()">
     <app-note [note]="note"
         (mousedown)="selectNote(note)"
         (onDrag)="noteDragStart($event)"

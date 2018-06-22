@@ -121,7 +121,6 @@ export class NoteComponent implements OnInit {
 
         var el = this.contentArea.nativeElement;
         var text = this.note.content.substring(el.selectionStart, el.selectionEnd)
-        console.log(text)
 
         this.onRightClick.emit({
             x: e.clientX,

@@ -93,10 +93,13 @@ export class NoteService {
             }
 
             // Create the Note instance
-            var note:Note = new Note(anote.tag, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
+            var note: Note = new Note(anote.tag, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
+            if (note.fontSize) { note.fontSize = anote.fontsize; }
+            if (note.font) { note.font = anote.font; }
             note.zindex = anote.zindex;
             // add the note to the array
             this.notes.push(note);
+            
             return;
         });
     }
@@ -120,6 +123,8 @@ export class NoteService {
                     width: note.width,
                     height: note.height,
                     zindex: note.zindex,
+                    fontSize: note.fontSize,
+                    font: note.font,
                     colors: note.colors,
                     socketid: this.socketID
                 }),
@@ -157,6 +162,8 @@ export class NoteService {
                     newy: note.y,
                     newW: note.width,
                     newH: note.height,
+                    newFontSize: note.fontSize,
+                    newFont: note.font,
                     newZ: note.zindex,
                     newColors: note.colors,
                     socketid: this.socketID
@@ -252,6 +259,8 @@ export class NoteService {
             note.y = input.newy;
             note.width = input.newW;
             note.height = input.newH;
+            if (note.fontSize) { note.fontSize = input.newFontSize; }
+            if (note.font) { note.font = input.newFont; }
             note.zindex = input.newZ;
             note.colors = input.newColors;
         })
@@ -272,6 +281,8 @@ export class NoteService {
             }
 
             var n = new Note(input.tag, input.content, input.x, input.y, input.width, input.height, colors);
+            if (n.fontSize) { n.fontSize = input.fontSize; }
+            if (n.font) { n.font = input.font; }
             n.zindex = input.zindex;
 
             this.notes.push(n);
