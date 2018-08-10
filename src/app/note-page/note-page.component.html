@@ -8,6 +8,16 @@
 
 </h1>
 
+<nav class="tabBar">
+    <h1>Pages</h1>
+    <div class="tab">
+        Test
+    </div>
+    <div class="tab">
+        Test a longer word
+    </div>
+</nav>
+
 <!-- Notes -->
 <div *ngFor="let note of getNotes()" (onmousemove)="mouseMove()">
     <app-note [note]="note"

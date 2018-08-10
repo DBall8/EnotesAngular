@@ -42,3 +42,18 @@
     max-height: 100px;
     width: 200px;
 }
+
+.tabBar {
+    float:left;
+    background: blue;
+    height: 100%;
+    width: 5%;
+}
+
+.tab {
+    margin: 5px;
+    padding: 5px;
+    background-color: green;
+    text-align: center;
+    border-radius: 5px;
+}

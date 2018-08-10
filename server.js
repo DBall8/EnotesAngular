@@ -48,7 +48,7 @@ app.use(sessions({
     activeDuration: 3 * 24 * 60 * 60 * 1000,
 }));
 
-//app.use(rHTTPS([/localhost:(\d{4})/], [/\/insecure/]));
+app.use(rHTTPS([/localhost:(\d{4})/], [/\/insecure/]));
 
 app.use((req, res, next) => {
 

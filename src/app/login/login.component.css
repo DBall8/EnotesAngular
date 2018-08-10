@@ -80,3 +80,19 @@ label{
 	color: red;
 	font-weight: bold;
 }
+
+.title{
+  background: black;
+  color: white;
+
+  border: 10px solid gray;
+  border-right: 0px;
+  border-left: 0px;
+
+  height: 65px;
+}
+
+.welcomeMessage {
+    padding: 10px 50px 10px 50px;
+    display: inline-block
+}

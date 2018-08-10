@@ -236,7 +236,7 @@ export class NoteService {
     setupSocket() {
 
         // connect to server's socket
-        this.socket = io(Config.serverURL);
+        this.socket = io(Config.serverURL, { secure: true });
 
         // receive an ID from the server to identify this client socket
         this.socket.on("ready", (socketid) => {
