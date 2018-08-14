@@ -1,5 +1,6 @@
 export class Note{
     id: String;
+    title: String;
     content: String;
     x: number;
     y: number;
@@ -12,8 +13,9 @@ export class Note{
     saved: boolean;
     colors;
 
-    constructor(id, content, x, y, width, height, colors) {
+    constructor(id, title, content, x, y, width, height, colors) {
         this.id = id;
+        this.title = title;
         this.content = content;
         this.x = x;
         this.y = y;

@@ -27,9 +27,9 @@ export class NoteService {
     socket;
 
     dummyNotes = [
-        new Note("note-123", "test", 100, 100, 200, 200, ""),
-        new Note("note-456", "test1", 400, 400, 300, 300, ""),
-        new Note("note-789", "test2", 800, 300, 400, 400, "")
+        new Note("note-123", "Title1", "test", 100, 100, 200, 200, ""),
+        new Note("note-456", "", "test1", 400, 400, 300, 300, ""),
+        new Note("note-789", "RUN", "test2", 800, 300, 400, 400, "")
     ];
 
 
@@ -93,7 +93,7 @@ export class NoteService {
             }
 
             // Create the Note instance
-            var note: Note = new Note(anote.tag, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
+            var note: Note = new Note(anote.tag, anote.title, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
             if (note.fontSize) { note.fontSize = anote.fontsize; }
             if (note.font) { note.font = anote.font; }
             note.zindex = anote.zindex;
@@ -107,7 +107,7 @@ export class NoteService {
     /* Adds a new note and sends it to the database to be added */
     addNote() {
         // Create a new note isntance that is empty
-        var note: Note = new Note('note-' + new Date().getTime(), "", 200, 200, 200, 200, ColorChart.yellow);
+        var note: Note = new Note('note-' + new Date().getTime(), "", "", 200, 200, 200, 200, ColorChart.yellow);
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);
@@ -117,6 +117,7 @@ export class NoteService {
             this.http.request("POST", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
+                    title: note.title,
                     content: note.content,
                     x: note.x,
                     y: note.y,
@@ -157,6 +158,7 @@ export class NoteService {
             this.http.request("PUT", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
+                    newtitle: note.title,
                     newcontent: note.content,
                     newx: note.x,
                     newy: note.y,
@@ -254,6 +256,7 @@ export class NoteService {
                 return;
             }
 
+            note.title = input.newtitle;
             note.content = input.newcontent;
             note.x = input.newx;
             note.y = input.newy;
@@ -280,7 +283,7 @@ export class NoteService {
                 colors = {};
             }
 
-            var n = new Note(input.tag, input.content, input.x, input.y, input.width, input.height, colors);
+            var n = new Note(input.tag, input.title, input.content, input.x, input.y, input.width, input.height, colors);
             if (n.fontSize) { n.fontSize = input.fontSize; }
             if (n.font) { n.font = input.font; }
             n.zindex = input.zindex;
