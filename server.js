@@ -21,8 +21,8 @@ else {
 // open the database
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
-    db.query('CREATE TABLE users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252))');
-    db.query('CREATE TABLE notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512))');
+    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252))');
+    db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512))');
     console.log("Successfully connected to database.");
 }, (err) =>{
     console.error("Failed to connect to database.")
@@ -254,7 +254,7 @@ function newUser(username, password, req, res){
     var hashVal = hash.digest('hex');
     
     // Attempt to store new user
-    db.query("INSERT INTO users VALUES($1, $2, $3)", [username, hashVal, salt]).then(() => {
+    db.query("INSERT INTO users (username, hash, salt) VALUES($1, $2, $3)", [username, hashVal, salt]).then(() => {
         // it worked so send a good response	
         req.session.username = username;
         // send repsonse indicating that the user did not already exist so it was successful
@@ -279,9 +279,9 @@ function addNote(req, res) {
     var username = req.user;
 
     // add the note to the database
-    var values = [username, input.tag, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors]
+    var values = [username, input.tag, input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors]
         
-    db.query('INSERT INTO notes VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', values).then(() =>{
+    db.query('INSERT INTO notes (username, tag, title, content, x, y, width, height, fontSize, font, zindex, colors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', values).then(() =>{
         // successful
         console.log(input.tag + " successfully added")
 
@@ -348,8 +348,8 @@ function updateNote(req, res){
     var username = req.user;
 
     // update contents of the note
-    var arr = [input.newcontent, input.newx, input.newy, input.newW, input.newH, input.newFontSize, input.newFont, input.newZ, input.newColors, username, input.tag]
-    db.query("UPDATE notes SET content=$1, x=$2, y=$3, width=$4, height=$5, fontSize=$6, font=$7, zindex=$8, colors=$9 WHERE username=$10 AND tag=$11", arr).then(() => {
+    var arr = [input.newtitle, input.newcontent, input.newx, input.newy, input.newW, input.newH, input.newFontSize, input.newFont, input.newZ, input.newColors, username, input.tag]
+    db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontSize=$7, font=$8, zindex=$9, colors=$10 WHERE username=$11 AND tag=$12", arr).then(() => {
 
         // notifty active connections that the note has updated
         Object.keys(activeClients).map((key => {
@@ -382,7 +382,7 @@ function getNotes(req, res) {
     var username = req.user;
 	
     // collect all notes stored for the user in an array
-    db.query("SELECT tag, content, x, y, width, height, fontSize, font, zindex, colors FROM notes WHERE username=$1", [username], function(error, resp){
+    db.query("SELECT tag, title, content, x, y, width, height, fontSize, font, zindex, colors FROM notes WHERE username=$1", [username], function(error, resp){
         // send the array
         res.writeHead(200, {'Content-type': 'application/json'});
         var response = {

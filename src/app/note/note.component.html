@@ -1,13 +1,14 @@
 <div class="note" [ngStyle]="setStyles()" (contextmenu)="rightClick($event)">
     <!-- Note Head -->
     <div class="noteHead" (mousedown)="dragStart($event)" [style.background-color]="setHeadColor(note.selected)">
-        <input type="image" src="assets/plus.png" alt="New" class="newButton button" />
+        <input type="image" src="assets/plus.png" alt="New" class="newButton button" (click)="addNote()" />
         <input type="text" class="title" 
             [(ngModel)]="note.title"
-            [style.font-size]="(note.fontSize + 2) + 'px'"
+            [style.font-size]="(note.fontSize + 4) + 'px'"
             [style.font-family]="note.font + ', Helvetica, sans-serif'"
             (mousedown)="$event.preventDefault();"
-            (dblclick)="$event.target.focus();"/>
+            (dblclick)="$event.target.focus();"
+            (keydown)="keyDown($event)"/>
         <input type="image" src="assets/x.png" alt="Delete" class="deleteButton button"
             (click)="deleteNote()"/>
     </div>
