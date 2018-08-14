@@ -244,7 +244,6 @@ export class NotePageComponent implements OnInit {
     }
 
     showAccountSettings() {
-        console.log("HI");
         this.accountSettingsVisible = true;
     }
 
