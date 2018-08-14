@@ -3,7 +3,7 @@
     <div class="rightFloat optionsContainer">
         <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
         <input type="image" src="assets/gear.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
-        <app-options-menu [visible]="optionsVisible"></app-options-menu>
+        <app-options-menu [visible]="optionsVisible" (showAccountSettings)="showAccountSettings()"></app-options-menu>
     </div>
 
 </h1>
@@ -28,6 +28,8 @@
 </div>
 
 <app-right-click-menu [display]="rcmDisplay"></app-right-click-menu>
+
+<app-account-settings-page [(display)]="accountSettingsVisible"></app-account-settings-page>
 
 
 

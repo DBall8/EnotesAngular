@@ -20,6 +20,7 @@ A component for managing a list of user's notes
 export class NotePageComponent implements OnInit {
 
     optionsVisible: boolean = false; //boolean for opening or closing the options menu
+    accountSettingsVisible: boolean = false;
 
     // options for controlling the custom right click menu
     rcmDisplay = {
@@ -240,6 +241,11 @@ export class NotePageComponent implements OnInit {
 
     getNotes() {
         return this.noteService.notes;
+    }
+
+    showAccountSettings() {
+        console.log("HI");
+        this.accountSettingsVisible = true;
     }
 
 }

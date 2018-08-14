@@ -11,6 +11,7 @@ import { AppRoutingModule } from './/app-routing.module';
 import { RightClickMenuComponent } from './right-click-menu/right-click-menu.component';
 import { OptionsMenuComponent } from './options-menu/options-menu.component';
 import { ChangelogComponent } from './changelog/changelog.component';
+import { AccountSettingsPageComponent } from './account-settings-page/account-settings-page.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { ChangelogComponent } from './changelog/changelog.component';
     LoginComponent,
     RightClickMenuComponent,
     OptionsMenuComponent,
-    ChangelogComponent
+    ChangelogComponent,
+    AccountSettingsPageComponent
   ],
   imports: [
       BrowserModule,
