@@ -71,7 +71,7 @@ export class NoteService {
 
         // If the response did not contain any notes, simply add a note and return
         if (ns.length < 1) {
-            this.addNote();
+            this.addNote(200, 200);
             return;
         }
 

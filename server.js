@@ -350,6 +350,8 @@ function addNote(req, res) {
         // notifty active connections that the note has been created
         Object.keys(activeClients).map((key => {
             if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
+                input.colors = JSON.parse(input.colors);
+                delete input['socketid'];
                 activeClients[key].socket.emit("create", req.body);
             }
         }))
@@ -416,7 +418,9 @@ function updateNote(req, res){
         // notifty active connections that the note has updated
         Object.keys(activeClients).map((key => {
             if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                activeClients[key].socket.emit("update", req.body);
+                input.newColors = JSON.parse(input.newColors);
+                delete input['socketid'];
+                activeClients[key].socket.emit("update", JSON.stringify(input));
             }
         }))
         
