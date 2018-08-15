@@ -105,9 +105,9 @@ export class NoteService {
     }
 
     /* Adds a new note and sends it to the database to be added */
-    addNote() {
+    addNote(x: number, y: number) {
         // Create a new note isntance that is empty
-        var note: Note = new Note('note-' + new Date().getTime(), "", "", 200, 200, 200, 200, ColorChart.yellow);
+        var note: Note = new Note('note-' + new Date().getTime(), "", "", x, y, 200, 200, ColorChart.yellow);
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);

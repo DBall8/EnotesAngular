@@ -111,6 +111,10 @@ app.post('/newuser', (req, res) => {
     createNewUser(req, res);
 })
 
+app.post('/changepassword', requireLogin, (req, res) =>{
+    changePassword(req, res);
+})
+
 app.all("*", (req, res, next) => {
 
     var uri = url.parse(req.url);
@@ -157,49 +161,64 @@ function login(req, res) {
     // convert to json
     var input = JSON.parse(req.body);
 
-    // search the users table of the database to see if the username is present
-    var success = false; // replace with true if a username and password match a saved user 
+			
+    var response = {}
 
-    // (should only be called once)
-    db.query("SELECT * FROM users WHERE username=$1", [input.username], function(err, resp){
-        if(err){
-            console.error("ERROR: could not access usernames\n" + err);
+    // Attempt to log in the user with the given username and password
+    attemptLogin(input.username, input.password).then((resolve, reject) => {
+        if(reject){ // connection error
+            console.log("Failed to log in user.");
+            res.writeHead(500);
+            res.end();
+            return;
+        }
+        if(resolve){ // successful login!
+            // Save session
+            req.session.username = input.username;
+            // build a response object stating that the login was successful and send the generated sessionID
+            response = { successful: true };
         }
         else{
+            // if login failed, send a response stating it was unsuccessful
+            response = {successful: false};
+        }
+        // send response
+        res.writeHead(200);
+        res.end(JSON.stringify(response));
+    })
+}
 
-            resp.rows.map((row) => {
-                // hash the password with the same salt and see if it matches the hash saved for that username
-                var hash = crypto.createHmac('sha512', row.salt);
-                hash.update(input.password);
-                var hashVal = hash.digest('hex');
-                if(hashVal === row.hash){
-                    console.log("LOGIN ACCEPTED: " + row.username)
-                    req.session.username = row.username;
-                    success = true;
-                }
-                else{
-                    console.log("LOGIN FAILED: " + row.username)
-                }
-            })
-			
-			var response = {}
-            // if a login was accepted
-            if(success){
-                // build a response object stating that the login was successful and send the generated sessionID
-                res.writeHead(200);
-                response = { successful: true };
-                res.end(JSON.stringify(response));
-                return;
+// Attempt to log in a given username with the given password
+function attemptLogin(username, password){
+
+    return new Promise((res, rej) => {
+
+
+        db.query("SELECT * FROM users WHERE username=$1", [username], function(err, resp){
+            if(err){
+                console.error("ERROR: could not access usernames\n" + err);
+                rej(true);
             }
             else{
-                // if login failed, send a response stating it was unsuccessful
-                response = {successful: false};
+                resp.rows.map((row) => {
+                    // hash the password with the same salt and see if it matches the hash saved for that username
+                    var hash = crypto.createHmac('sha512', row.salt);
+                    hash.update(password);
+                    var hashVal = hash.digest('hex');
+                    if(hashVal === row.hash){
+                        console.log("PASSWORDS MATCHED: " + username)
+                        res(true);
+                    }
+                    else{
+                        console.log("PASSWORDS DID NOT MATCH: " + username);
+                        res(false);
+                    }
+                })
+                // User does not exist
+                res(false);
             }
-            // send response
-            res.writeHead(200);
-            res.end(JSON.stringify(response));
-        }
-    })
+        })
+    });
 }
 
 // logs the user sessionID out
@@ -268,6 +287,49 @@ function newUser(username, password, req, res){
         console.error("ERROR could not insert new user:\n" + err);
         res.writeHead(500);
     });
+}
+
+function changePassword(req, res){
+    var input = JSON.parse(req.body);
+
+    // Make sure the user's password matches the old password
+    attemptLogin(req.user, input.oldpassword).then((resolve, reject) => {
+        if(reject){ // connection error
+            console.log("Failed to log in user.");
+            res.writeHead(500);
+            res.end();
+            return;
+        }
+        if(resolve){ // successful login!
+
+            // Generate a new salt and hash from the new password
+            // generate a 128 byte salt
+            var salt = crypto.randomBytes(128).toString('base64');
+            // create a hash with the salt
+            var hash = crypto.createHmac('sha512', salt);
+            // update the hash with the password
+            hash.update(input.newpassword);
+
+            // add a row to the users db table with the username, the hashed value, the salt used, and a unique key generated for this user
+            var hashVal = hash.digest('hex');
+
+            // change the password
+            db.query("UPDATE users SET hash=$1, salt=$2 WHERE username=$3", [hashVal, salt, req.user]).then(() => {
+                console.log("Password updated for " + req.user);
+                // build a response object stating that the login was successful and send the generated sessionID
+                response = { successful: true };
+                res.writeHead(200);
+                res.end(JSON.stringify(response));
+            });
+        }
+        else{
+            // if login failed, send a response stating it was unsuccessful
+            res.writeHead(200);
+            res.end(JSON.stringify({ successful: false }));
+        }
+        // send response
+        
+    })
 }
 
 // add a note to the database

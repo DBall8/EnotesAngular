@@ -33,7 +33,7 @@ export class NoteComponent implements OnInit {
 
     /* Adds a new note */
     addNote() {
-        this.noteService.addNote();
+        this.noteService.addNote(this.note.x + 100, this.note.y + 100);
     }
 
     /* Deletes a note */
