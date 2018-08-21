@@ -12,6 +12,9 @@ A component for managing a list of user's notes
 
 */
 
+const TOPZ: number = 9999;
+const BOTTOMZ: number = 100;
+
 @Component({
   selector: 'app-note-page',
   templateUrl: './note-page.component.html',
@@ -47,6 +50,8 @@ export class NotePageComponent implements OnInit {
         offsetX: 0,
         offsetY: 0
     };
+
+    topNoteZ: number = 0;
 
     constructor(private noteService: NoteService) {
     }
@@ -97,7 +102,6 @@ export class NotePageComponent implements OnInit {
 
         // request the user's notes
         this.noteService.getNotes();
-        
     }
 
     /* Handles the mouse move event for the window
@@ -145,20 +149,67 @@ export class NotePageComponent implements OnInit {
     @param note The note to bring to the front
     */
     selectNote(note: Note) {
+
+        if (this.topNoteZ <= 0) {
+            this.findTopNoteZ()
+        }
+
         // If the note is already selected, do nothing
         if (note.selected) {
             return;
         }
-
-        // deselect and move back all notes
+        
+        // deselect all notes
         this.noteService.notes.map((n: Note) => {
-            n.selected = false;
-            n.zindex--;
+            if (n.selected) n.selected = false;
         });
+
+        if (this.topNoteZ >= TOPZ) {
+            this.restackNotes();
+        }
 
         // select the given note and bring it to the top
         note.selected = true;
-        note.zindex = 9999;
+        this.topNoteZ++;
+        note.zindex = this.topNoteZ;
+        this.noteService.updateNote(note);
+    }
+
+    /* When a note has reached the top z index, it takes all notes and restacks them so that large
+    * ranges of zindex do not happen (ex. if you click back and forth between two notes, you might have
+    * one with zindex 110, one with 980, and one with 981. This puts them back to 100, 101, 102 )
+    * And then also updates the server about each note.
+    */
+    restackNotes() {
+        var notes: Note[] = this.noteService.notes;
+        var len = notes.length;
+        var swapNote: Note;
+
+        for (var i = 0; i < len; i++) {
+            for (var j = 0; j < len - i - 1; j++) {
+                if (notes[j].zindex > notes[j+1].zindex) {
+                    swapNote = notes[j];
+                    notes[j] = notes[j + 1]
+                    notes[j + 1] = swapNote;
+                }
+            }
+        }
+
+        for (var i = 0; i < len; i++) {
+            notes[i].zindex = BOTTOMZ + i;
+            this.noteService.updateNote(notes[i]);
+        }
+
+        this.topNoteZ = BOTTOMZ + len;
+    }
+
+    /* Finds the highest zindex of all notes */
+    findTopNoteZ() {
+        this.noteService.notes.map((n: Note) => {
+            if (n.zindex > this.topNoteZ) {
+                this.topNoteZ = n.zindex
+            }
+        })
     }
 
     /* Starts a note drag event

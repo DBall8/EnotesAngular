@@ -272,18 +272,7 @@ export class NoteService {
         this.socket.on("create", (body) => {
             var input = JSON.parse(body);
 
-            var colors;
-            try {
-                colors = JSON.parse(input.colors);
-            }
-            catch (e) {
-                console.error("Failed to parse colors json");
-                console.error(e);
-                console.error(input.colors);
-                colors = {};
-            }
-
-            var n = new Note(input.tag, input.title, input.content, input.x, input.y, input.width, input.height, colors);
+            var n = new Note(input.tag, input.title, input.content, input.x, input.y, input.width, input.height, input.colors);
             if (n.fontSize) { n.fontSize = input.fontSize; }
             if (n.font) { n.font = input.font; }
             n.zindex = input.zindex;

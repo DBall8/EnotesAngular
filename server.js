@@ -350,9 +350,10 @@ function addNote(req, res) {
         // notifty active connections that the note has been created
         Object.keys(activeClients).map((key => {
             if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                input.colors = JSON.parse(input.colors);
-                delete input['socketid'];
-                activeClients[key].socket.emit("create", req.body);
+                // Create a copy of the message received except without socketid
+                var emission = JSON.parse(JSON.stringify(input))
+                delete emission['socketid'];
+                activeClients[key].socket.emit("create", JSON.stringify(emission));
             }
         }))
 
@@ -362,13 +363,13 @@ function addNote(req, res) {
             sessionExpired: false
         }
         res.end(JSON.stringify(response));
-        }, (err) =>{
-            // rejected
-            console.error("Could not insert new note:")
-            console.error(err)
-                res.writeHead(500);
-            res.end();
-        });	
+    }, (err) =>{
+        // rejected
+        console.error("Could not insert new note:")
+        console.error(err)
+        res.writeHead(500);
+        res.end();
+    });	
 }
 
 // delete a note from the database
@@ -418,9 +419,10 @@ function updateNote(req, res){
         // notifty active connections that the note has updated
         Object.keys(activeClients).map((key => {
             if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                input.newColors = JSON.parse(input.newColors);
-                delete input['socketid'];
-                activeClients[key].socket.emit("update", JSON.stringify(input));
+                // Create a copy of the message received except without socketid
+                var emission = JSON.parse(JSON.stringify(input))
+                delete emission['socketid'];
+                activeClients[key].socket.emit("update", JSON.stringify(emission));
             }
         }))
         
