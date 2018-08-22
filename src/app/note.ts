@@ -1,7 +1,7 @@
 export class Note{
-    id: String;
-    title: String;
-    content: String;
+    id: string;
+    title: string;
+    content: string;
     x: number;
     y: number;
     width: number;

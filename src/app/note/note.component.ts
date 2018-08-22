@@ -10,6 +10,11 @@ Component for displaying a single note
 
 */
 
+declare const InstallTrigger: any;
+
+const MAXUNDO: number = 40;
+const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
+
 @Component({
   selector: 'app-note',
   templateUrl: './note.component.html',
@@ -25,10 +30,24 @@ export class NoteComponent implements OnInit {
 
     @ViewChild('contentArea') contentArea: ElementRef;
 
-  constructor(private noteService: NoteService) { }
+    ctrlPress: boolean = false;
+
+    private isFirefox: boolean = false;
+
+    undoArray: string[] = [];
+    undoEnd: number = 0;
+    undoStart: number = 0;
+    undoIntervalReady: boolean = true;
+    undoIntervalID: number;
+
+    constructor(private noteService: NoteService) { }
 
 
     ngOnInit() {
+        this.isFirefox = typeof InstallTrigger !== 'undefined';
+        if (this.isFirefox) {
+            this.setUndoInterval();
+        }
     }
 
     /* Adds a new note */
@@ -92,23 +111,65 @@ export class NoteComponent implements OnInit {
     /* Marks the note as unsaved whenever a change is made */
     keyDown(e) {
 
-        // override tab
-        if (e.key == 'Tab') {
-            // prevent default behavior
-            e.preventDefault();
-            
-            var cursorStart = this.contentArea.nativeElement.selectionStart;
-            var cursorEnd = this.contentArea.nativeElement.selectionEnd;
+        if (this.isFirefox) {
 
-            var text = this.note.content;
-            this.note.content = text.substring(0, cursorStart) + '\t' + text.substring(cursorEnd, text.length);
+            switch (e.key) {
+//                case 'Enter':
+//                    this.pushUndo(this.note.content);
+//                    break;
+                case 'z':
+                    if (this.ctrlPress) {
+                        e.preventDefault();
+                        this.undo();
+                    }
+                    break;
+                case 'Tab':
+                    // prevent default behavior
+                    e.preventDefault();
 
-            setTimeout(() => {
-                this.contentArea.nativeElement.selectionStart = cursorStart + 1;
-                this.contentArea.nativeElement.selectionEnd = cursorStart + 1;
-            })
-            
+                    if (this.undoIntervalReady) {
+                        this.pushUndo(this.note.content);
+                    }
+
+                    var cursorStart = this.contentArea.nativeElement.selectionStart;
+                    var cursorEnd = this.contentArea.nativeElement.selectionEnd;
+
+                    var text = this.note.content;
+                    this.note.content = text.substring(0, cursorStart) + '\t' + text.substring(cursorEnd, text.length);
+
+                    setTimeout(() => {
+                        this.contentArea.nativeElement.selectionStart = cursorStart + 1;
+                        this.contentArea.nativeElement.selectionEnd = cursorStart + 1;
+                    });
+                case 'Control':
+                    if (!this.ctrlPress) {
+                        this.ctrlPress = true;
+                    }
+                    break;
+                case 'Alt':
+                case 'Shift':
+                    break;
+                default:
+                    if (this.undoIntervalReady) {
+                        this.pushUndo(this.note.content);
+                    }
+                
+            }
         }
+        else if (e.key == 'Tab') {
+            e.preventDefault();
+            document.execCommand('insertText', false, '\t');
+        }
+
+        
+    }
+
+    keyUp(e) {
+
+        if (this.isFirefox && e.key == 'Control') {
+            this.ctrlPress = false;
+        }
+
         this.note.saved = false;
         this.noteService.changesSaved = false;
     }
@@ -128,5 +189,82 @@ export class NoteComponent implements OnInit {
             note: this.note,
             text: text
         });
+    }
+
+    popUndo() {
+        this.resetUndoTimer();
+        this.undoIntervalReady = true;
+
+        if (this.undoEnd == this.undoStart){
+            return null;
+        }
+
+        if (this.undoEnd <= 0) {
+            this.undoEnd = MAXUNDO;
+        }
+        this.undoEnd--;
+
+        return this.undoArray[this.undoEnd];
+    }
+
+    pushUndo(str: string) {
+
+        var prevStr;
+        if (this.undoEnd <= 0) {
+            prevStr = this.undoArray[MAXUNDO - 1];
+        }
+        else {
+            prevStr = this.undoArray[this.undoEnd - 1];
+        }
+
+        if (prevStr === str) return;
+        this.undoIntervalReady = false;
+
+        this.undoArray[this.undoEnd] = str;
+        this.undoEnd++;
+        if (this.undoEnd == MAXUNDO) {
+            this.undoEnd = 0;
+        }
+        if (this.undoEnd == this.undoStart) {
+            this.undoStart++;
+            if (this.undoStart >= MAXUNDO) {
+                this.undoStart = 0;
+            }
+        }
+
+        this.resetUndoTimer();
+
+        //console.log(this.undoArray)
+        //console.log("Start: " + this.undoStart + " End: " + this.undoEnd);
+    }
+
+    undo() {
+        var undoStr = this.popUndo();
+        if (undoStr !== null) {
+            var cursorStart = this.contentArea.nativeElement.selectionStart;
+            var cursorEnd = this.contentArea.nativeElement.selectionEnd;
+
+            var delta = this.note.content.length - undoStr.length;
+            var newPos = cursorStart - delta;
+            this.note.content = undoStr;
+
+            setTimeout(() => {
+                this.contentArea.nativeElement.selectionStart = newPos;
+                this.contentArea.nativeElement.selectionEnd = newPos;
+            });
+        }
+    }
+
+    resetUndoTimer() {
+        if (this.undoIntervalID) {
+            window.clearInterval(this.undoIntervalID);
+            this.setUndoInterval();
+        }
+    }
+
+    setUndoInterval() {
+        this.undoIntervalID = window.setInterval(() => {
+            if (!this.undoIntervalReady) this.undoIntervalReady = true;
+        }, UNDOTIME);
     }
 }
