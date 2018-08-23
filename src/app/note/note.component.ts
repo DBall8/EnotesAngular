@@ -3,6 +3,7 @@ import { Component, EventEmitter, OnInit, Input, Output, ViewChild, ElementRef }
 import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
 import { ColorChart } from '../exports/ColorChart';
+import { UndoHandler } from '../classes/undoHandler';
 
 /* NoteComponent
 
@@ -11,9 +12,6 @@ Component for displaying a single note
 */
 
 declare const InstallTrigger: any;
-
-const MAXUNDO: number = 40;
-const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
 
 @Component({
   selector: 'app-note',
@@ -31,14 +29,11 @@ export class NoteComponent implements OnInit {
     @ViewChild('contentArea') contentArea: ElementRef;
 
     ctrlPress: boolean = false;
+    prevContent: string;
 
     private isFirefox: boolean = false;
 
-    undoArray: string[] = [];
-    undoEnd: number = 0;
-    undoStart: number = 0;
-    undoIntervalReady: boolean = true;
-    undoIntervalID: number;
+    undoHandler: UndoHandler;
 
     constructor(private noteService: NoteService) { }
 
@@ -46,7 +41,7 @@ export class NoteComponent implements OnInit {
     ngOnInit() {
         this.isFirefox = typeof InstallTrigger !== 'undefined';
         if (this.isFirefox) {
-            this.setUndoInterval();
+            this.undoHandler = new UndoHandler();
         }
     }
 
@@ -127,9 +122,7 @@ export class NoteComponent implements OnInit {
                     // prevent default behavior
                     e.preventDefault();
 
-                    if (this.undoIntervalReady) {
-                        this.pushUndo(this.note.content);
-                    }
+                    this.undoHandler.track(this.note.content, this.note);
 
                     var cursorStart = this.contentArea.nativeElement.selectionStart;
                     var cursorEnd = this.contentArea.nativeElement.selectionEnd;
@@ -146,13 +139,8 @@ export class NoteComponent implements OnInit {
                         this.ctrlPress = true;
                     }
                     break;
-                case 'Alt':
-                case 'Shift':
-                    break;
                 default:
-                    if (this.undoIntervalReady) {
-                        this.pushUndo(this.note.content);
-                    }
+                    this.prevContent = this.note.content;
                 
             }
         }
@@ -174,6 +162,10 @@ export class NoteComponent implements OnInit {
         this.noteService.changesSaved = false;
     }
 
+    onInput() {
+        this.undoHandler.track(this.prevContent, this.note);
+    }
+
     /* Starts a note's right click event
     @param e The mouse event that launched the right click
     */
@@ -191,55 +183,8 @@ export class NoteComponent implements OnInit {
         });
     }
 
-    popUndo() {
-        this.resetUndoTimer();
-        this.undoIntervalReady = true;
-
-        if (this.undoEnd == this.undoStart){
-            return null;
-        }
-
-        if (this.undoEnd <= 0) {
-            this.undoEnd = MAXUNDO;
-        }
-        this.undoEnd--;
-
-        return this.undoArray[this.undoEnd];
-    }
-
-    pushUndo(str: string) {
-
-        var prevStr;
-        if (this.undoEnd <= 0) {
-            prevStr = this.undoArray[MAXUNDO - 1];
-        }
-        else {
-            prevStr = this.undoArray[this.undoEnd - 1];
-        }
-
-        if (prevStr === str) return;
-        this.undoIntervalReady = false;
-
-        this.undoArray[this.undoEnd] = str;
-        this.undoEnd++;
-        if (this.undoEnd == MAXUNDO) {
-            this.undoEnd = 0;
-        }
-        if (this.undoEnd == this.undoStart) {
-            this.undoStart++;
-            if (this.undoStart >= MAXUNDO) {
-                this.undoStart = 0;
-            }
-        }
-
-        this.resetUndoTimer();
-
-        //console.log(this.undoArray)
-        //console.log("Start: " + this.undoStart + " End: " + this.undoEnd);
-    }
-
     undo() {
-        var undoStr = this.popUndo();
+        var undoStr = this.undoHandler.undo();
         if (undoStr !== null) {
             var cursorStart = this.contentArea.nativeElement.selectionStart;
             var cursorEnd = this.contentArea.nativeElement.selectionEnd;
@@ -253,18 +198,5 @@ export class NoteComponent implements OnInit {
                 this.contentArea.nativeElement.selectionEnd = newPos;
             });
         }
-    }
-
-    resetUndoTimer() {
-        if (this.undoIntervalID) {
-            window.clearInterval(this.undoIntervalID);
-            this.setUndoInterval();
-        }
-    }
-
-    setUndoInterval() {
-        this.undoIntervalID = window.setInterval(() => {
-            if (!this.undoIntervalReady) this.undoIntervalReady = true;
-        }, UNDOTIME);
     }
 }

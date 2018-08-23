@@ -1,15 +1,42 @@
+import { Note } from './note';
+
+const MAXUNDO: number = 40;
+const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
+
+interface UndoObj {
+    str: string,
+    note: Note
+}
+
 export class UndoHandler {
-    undoArray: string[] = [];
-    undoEnd: number = 0;
-    undoStart: number = 0;
-    undoIntervalReady: boolean = true;
-    undoIntervalID: number;
+
+    private undoArray: UndoObj[] = [];
+    private undoEnd: number = 0;
+    private undoStart: number = 0;
+    private undoIntervalReady: boolean = true;
+    private undoIntervalID: number;
 
     constructor() {
-
+        this.setUndoInterval();
     }
 
-    popUndo() {
+    public track(str: string, note: Note) {
+        if (this.undoIntervalReady) {
+            var newUndo: UndoObj = {
+                str: str,
+                note: note
+            }
+            this.pushUndo(newUndo);
+        }
+    }
+
+    public undo() {
+        var undoObj: UndoObj = this.popUndo();
+        if (undoObj) return undoObj.str;
+        return null;
+    }
+
+    private popUndo() {
         this.resetUndoTimer();
         this.undoIntervalReady = true;
 
@@ -25,8 +52,8 @@ export class UndoHandler {
         return this.undoArray[this.undoEnd];
     }
 
-    pushUndo(str: string) {
-
+    private pushUndo(newUndo: UndoObj) {
+        /*
         var prevStr;
         if (this.undoEnd <= 0) {
             prevStr = this.undoArray[MAXUNDO - 1];
@@ -36,9 +63,10 @@ export class UndoHandler {
         }
 
         if (prevStr === str) return;
+*/
         this.undoIntervalReady = false;
 
-        this.undoArray[this.undoEnd] = str;
+        this.undoArray[this.undoEnd] = newUndo;
         this.undoEnd++;
         if (this.undoEnd == MAXUNDO) {
             this.undoEnd = 0;
@@ -56,31 +84,16 @@ export class UndoHandler {
         //console.log("Start: " + this.undoStart + " End: " + this.undoEnd);
     }
 
-    undo() {
-        var undoStr = this.popUndo();
-        if (undoStr !== null) {
-            var cursorStart = this.contentArea.nativeElement.selectionStart;
-            var cursorEnd = this.contentArea.nativeElement.selectionEnd;
 
-            var delta = this.note.content.length - undoStr.length;
-            var newPos = cursorStart - delta;
-            this.note.content = undoStr;
 
-            setTimeout(() => {
-                this.contentArea.nativeElement.selectionStart = newPos;
-                this.contentArea.nativeElement.selectionEnd = newPos;
-            });
-        }
-    }
-
-    resetUndoTimer() {
+    private resetUndoTimer() {
         if (this.undoIntervalID) {
             window.clearInterval(this.undoIntervalID);
             this.setUndoInterval();
         }
     }
 
-    setUndoInterval() {
+    private setUndoInterval() {
         this.undoIntervalID = window.setInterval(() => {
             if (!this.undoIntervalReady) this.undoIntervalReady = true;
         }, UNDOTIME);

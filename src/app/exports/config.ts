@@ -1,5 +1,5 @@
 
 export const Config = {
-    DEBUG: false,
+    DEBUG: true,
     serverURL: "https://enotes.site"
 }
