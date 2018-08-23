@@ -13,6 +13,7 @@ export class UndoHandler {
     private undoArray: UndoObj[] = [];
     private undoEnd: number = 0;
     private undoStart: number = 0;
+    private redoEnd: number = -1;
     private undoIntervalReady: boolean = true;
     private undoIntervalID: number;
 
@@ -35,6 +36,11 @@ export class UndoHandler {
         if (undoObj) undoObj.note.castUndo(undoObj.str);
     }
 
+    public redo() {
+        var undoObj: UndoObj = this.callRedo();
+        if (undoObj) undoObj.note.castUndo(undoObj.str);
+    }
+
     private popUndo() {
         this.resetUndoTimer();
         this.undoIntervalReady = true;
@@ -43,12 +49,27 @@ export class UndoHandler {
             return null;
         }
 
+        var saveUndo = false;
+
+        if (this.undoEnd == this.redoEnd) {
+            saveUndo = true;
+        }
+
         if (this.undoEnd <= 0) {
             this.undoEnd = MAXUNDO;
         }
         this.undoEnd--;
 
-        return this.undoArray[this.undoEnd];
+        if (this.undoEnd == this.redoEnd) this.redoEnd--;
+        if (this.redoEnd < 0) this.redoEnd == MAXUNDO - 1;
+
+        var undoObj = this.undoArray[this.undoEnd];
+
+        if (saveUndo) {
+            this.undoArray[this.redoEnd] = { str: undoObj.note.note.content, note: undoObj.note }
+        }
+
+        return undoObj;
     }
 
     private pushUndo(newUndo: UndoObj) {
@@ -77,10 +98,28 @@ export class UndoHandler {
             }
         }
 
+        this.redoEnd = this.undoEnd;
+
         this.resetUndoTimer();
 
         //console.log(this.undoArray)
         //console.log("Start: " + this.undoStart + " End: " + this.undoEnd);
+    }
+
+    private callRedo() {
+        if (this.redoEnd == this.undoEnd) {
+            return null;
+        }
+
+        this.resetUndoTimer();
+        this.undoIntervalReady = true;
+
+        this.undoEnd++;
+        if (this.undoEnd >= MAXUNDO) {
+            this.undoEnd = 0;
+        }
+
+        return this.undoArray[this.undoEnd];
     }
 
     public readyUndo() {

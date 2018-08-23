@@ -23,7 +23,8 @@
             (keydown)="keyDown($event)"
             (keyup)="keyUp($event)"
             (input)="onInput()"
-            (focus)="onFocus()"></textarea>
+            (focus)="resetUndo()"
+            (click)="resetUndo()"></textarea>
     </div>
     <img class="resize" src="assets/resize.png" (mousedown)="resizeStart($event)"/>
 </div>

@@ -112,6 +112,13 @@ export class NoteComponent implements OnInit {
                         if (this.undoHandler) this.undoHandler.undo();
                     }
                     break;
+                case 'Z':
+                case 'y':
+                    if (this.ctrlPress) {
+                        e.preventDefault();
+                        if (this.undoHandler) this.undoHandler.redo();
+                    }
+                    break;
                 case 'Tab':
                     // prevent default behavior
                     e.preventDefault();
@@ -160,7 +167,7 @@ export class NoteComponent implements OnInit {
         if (this.undoHandler) this.undoHandler.track(this.prevContent, this);
     }
 
-    onFocus() {
+    resetUndo() {
         if (this.undoHandler) this.undoHandler.readyUndo();
     }
 
