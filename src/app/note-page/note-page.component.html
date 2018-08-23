@@ -21,6 +21,7 @@
 <!-- Notes -->
 <div *ngFor="let note of getNotes()" (onmousemove)="mouseMove()">
     <app-note [note]="note"
+        [undoHandler]="undoHandler"
         (mousedown)="selectNote(note)"
         (onDrag)="noteDragStart($event)"
         (onResize)="noteResizeStart($event)"

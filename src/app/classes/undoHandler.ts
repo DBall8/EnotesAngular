@@ -1,11 +1,11 @@
-import { Note } from './note';
+import { NoteComponent } from '../note/note.component';
 
 const MAXUNDO: number = 40;
 const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
 
 interface UndoObj {
     str: string,
-    note: Note
+    note: NoteComponent
 }
 
 export class UndoHandler {
@@ -20,7 +20,7 @@ export class UndoHandler {
         this.setUndoInterval();
     }
 
-    public track(str: string, note: Note) {
+    public track(str: string, note: NoteComponent) {
         if (this.undoIntervalReady) {
             var newUndo: UndoObj = {
                 str: str,
@@ -32,8 +32,7 @@ export class UndoHandler {
 
     public undo() {
         var undoObj: UndoObj = this.popUndo();
-        if (undoObj) return undoObj.str;
-        return null;
+        if (undoObj) undoObj.note.castUndo(undoObj.str);
     }
 
     private popUndo() {
@@ -84,7 +83,9 @@ export class UndoHandler {
         //console.log("Start: " + this.undoStart + " End: " + this.undoEnd);
     }
 
-
+    public readyUndo() {
+        this.undoIntervalReady = true;
+    }
 
     private resetUndoTimer() {
         if (this.undoIntervalID) {

@@ -22,7 +22,8 @@
             [style.font-family]="note.font + ', Helvetica, sans-serif'"
             (keydown)="keyDown($event)"
             (keyup)="keyUp($event)"
-            (input)="onInput()"></textarea>
+            (input)="onInput()"
+            (focus)="onFocus()"></textarea>
     </div>
     <img class="resize" src="assets/resize.png" (mousedown)="resizeStart($event)"/>
 </div>

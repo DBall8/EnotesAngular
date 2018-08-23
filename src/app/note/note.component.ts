@@ -21,6 +21,7 @@ declare const InstallTrigger: any;
 export class NoteComponent implements OnInit {
 
     @Input() note: Note; // The note to display
+    @Input() undoHandler: UndoHandler;
 
     @Output() onDrag = new EventEmitter<Object>(); // event for when the user moves the note
     @Output() onResize = new EventEmitter<Object>(); // event for when the user resizes the note
@@ -33,16 +34,11 @@ export class NoteComponent implements OnInit {
 
     private isFirefox: boolean = false;
 
-    undoHandler: UndoHandler;
-
     constructor(private noteService: NoteService) { }
 
 
     ngOnInit() {
         this.isFirefox = typeof InstallTrigger !== 'undefined';
-        if (this.isFirefox) {
-            this.undoHandler = new UndoHandler();
-        }
     }
 
     /* Adds a new note */
@@ -115,14 +111,14 @@ export class NoteComponent implements OnInit {
                 case 'z':
                     if (this.ctrlPress) {
                         e.preventDefault();
-                        this.undo();
+                        if (this.undoHandler) this.undoHandler.undo();
                     }
                     break;
                 case 'Tab':
                     // prevent default behavior
                     e.preventDefault();
 
-                    this.undoHandler.track(this.note.content, this.note);
+                    if(this.undoHandler) this.undoHandler.track(this.note.content, this);
 
                     var cursorStart = this.contentArea.nativeElement.selectionStart;
                     var cursorEnd = this.contentArea.nativeElement.selectionEnd;
@@ -163,7 +159,11 @@ export class NoteComponent implements OnInit {
     }
 
     onInput() {
-        this.undoHandler.track(this.prevContent, this.note);
+        if (this.undoHandler) this.undoHandler.track(this.prevContent, this);
+    }
+
+    onFocus() {
+        if (this.undoHandler) this.undoHandler.readyUndo();
     }
 
     /* Starts a note's right click event
@@ -183,15 +183,14 @@ export class NoteComponent implements OnInit {
         });
     }
 
-    undo() {
-        var undoStr = this.undoHandler.undo();
-        if (undoStr !== null) {
+    public castUndo(str: string) {
+        if (str !== null) {
             var cursorStart = this.contentArea.nativeElement.selectionStart;
             var cursorEnd = this.contentArea.nativeElement.selectionEnd;
 
-            var delta = this.note.content.length - undoStr.length;
+            var delta = this.note.content.length - str.length;
             var newPos = cursorStart - delta;
-            this.note.content = undoStr;
+            this.note.content = str;
 
             setTimeout(() => {
                 this.contentArea.nativeElement.selectionStart = newPos;
