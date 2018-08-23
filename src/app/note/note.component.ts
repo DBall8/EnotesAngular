@@ -1,8 +1,8 @@
 import { Component, EventEmitter, OnInit, Input, Output, ViewChild, ElementRef } from '@angular/core';
 
-import { NoteService } from '../note.service';
-import { Note } from '../note';
-import { ColorChart } from '../ColorChart';
+import { NoteService } from '../services/note.service';
+import { Note } from '../classes/note';
+import { ColorChart } from '../exports/ColorChart';
 
 /* NoteComponent
 
