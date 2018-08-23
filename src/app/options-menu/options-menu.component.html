@@ -1,0 +1,5 @@
+<div class="optionsmenu" [style.display]="visible? 'block': 'none'" (click)="$event.stopPropagation()">
+    <p class="optionsmenuitem" (click)="showAccountSettingsWindow()">Account settings</p>
+    <p class="optionsmenuitem" (click)="gotoChangelog()">Changelog</p>
+    <p class="optionsmenuitem" (click)="logout()">Log out</p>
+</div>

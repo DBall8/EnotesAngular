@@ -1,0 +1,33 @@
+<div class="menu" [ngStyle]="setStyle()">
+
+    <!-- Main right click menu -->
+	<div class="optionsHolder">
+		<h3 class="menuitem" (click)="selectOption($event, 'colors')">Color</h3>
+        <h3 class="menuitem" (click)="selectOption($event, 'fontSize')">Font size</h3>
+        <h3 class="menuitem" (click)="selectOption($event, 'font')">Font</h3>
+        <h3 class="menuitem" #copy>Copy</h3>
+        <h3 class="menuitem" #paste>Paste</h3>
+	</div>
+
+    <!-- Colors submenu -->
+	<div class="subMenu" [style.display]="display.subMenu == 'colors'? 'block': 'none'">
+			<div *ngFor="let color of getColors()" class="menuitem" [style.background-color]="display.note && display.note.colors == colorChart[color]? '#9b9b9b':''">
+				<div class="colorOption" [style.background-color]="colorChart[color].body" (click)="selectColor(colorChart[color])"></div>
+			</div>
+    </div>
+
+    <!-- Font size submenu -->
+	<div class="subMenu" [style.display]="display.subMenu == 'fontSize'? 'block': 'none'">
+			<div *ngFor="let fontSize of fontSizes" class="menuitem" [style.background-color]="display.note && display.note.fontSize == fontSize? '#9b9b9b':''">
+				<div class="fontOption" (click)="selectFontSize(fontSize)">{{fontSize}} pt</div>
+			</div>
+
+    </div>
+
+    <!-- Font submenu -->
+	<div class="subMenu" [style.display]="display.subMenu == 'font'? 'block': 'none'">
+            <div *ngFor="let font of fonts" class="menuitem" [style.background-color]="display.note && display.note.font == font? '#9b9b9b':''">
+				<div class="fontOption" (click)="selectFont(font)">{{font}}</div>
+			</div>
+    </div>
+</div>

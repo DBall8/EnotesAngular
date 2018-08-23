@@ -1,0 +1,60 @@
+.accountSettingsPage {
+    background: #6e6e6e;
+    border: 5px solid black;
+    width: 80%;
+    position: relative;
+    z-index: 10000;
+    margin: auto;
+    color: white;
+}
+
+p, input {
+    display: inline;
+    margin: auto;
+}
+
+input {
+    float: right;
+}
+
+h1 {
+    text-align: center;
+    margin: auto;
+    padding: 20px;
+    font-size: 3em;
+}
+
+.changePasswordDiv {
+    background: #333333;
+    width: 350px;
+    margin: auto;
+    padding: 20px;
+}
+
+.closeButton {
+    float: right;
+    display: inline-block;
+    font-size: 2em;
+    margin: 5px;
+}
+
+.bottomButton {
+    display: inline-block;
+    font-size: 2em;
+}
+
+.updateButtom {
+    margin: 10px;
+    clear: both;
+}
+
+.cancelButton{
+    margin: 5px;
+    float: right;
+}
+
+.error {
+    color: #ff6060;
+    font-size: 1.5em;
+    margin: 5px;
+}

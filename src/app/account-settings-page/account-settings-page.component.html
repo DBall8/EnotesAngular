@@ -1,0 +1,14 @@
+<div class="accountSettingsPage" [style.display]="display? 'block': 'none'">
+    <button type="button" class="closeButton" (click)="close()">X</button>
+    <h1>Account Settings</h1>
+    <div class="changePasswordDiv">
+        <h2>Change Password</h2>
+        <div><p>Old Password:</p><input #OldPassword type="password" (input)="onType()"/></div><br />
+        <div><p>New Password:</p><input #NewPassword type="password" (input)="onType()"/></div><br />
+        <div><p>Confirm New Password:</p><input #ConfirmPassword type="password" (input)="onType()"/></div><br />
+        <p [style.display]="errorText? 'inline-block': 'none'" class="error">{{errorText}}</p><br />
+        <button class="bottomButton updateButton" (click)="updatePassword()">Update Password</button>
+    </div>
+    <button class="bottomButton cancelButton" (click)="close()">Close</button><div style="clear:both"></div>
+    
+</div>

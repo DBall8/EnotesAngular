@@ -1,0 +1,9 @@
+<button class="backbutton" (click)="goBack()">Back</button>
+<div *ngFor="let log of logs">
+    <div class="logdiv">
+		<h1>{{log.title + ' - ' + log.date}}</h1>
+		<p>{{log.content}}</p>
+	</div>
+</div>
+					
+)}
