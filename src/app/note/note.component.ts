@@ -4,6 +4,7 @@ import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
 import { ColorChart } from '../exports/ColorChart';
 import { UndoHandler } from '../classes/undoHandler';
+import { Config } from '../exports/config';
 
 /* NoteComponent
 
@@ -11,7 +12,7 @@ Component for displaying a single note
 
 */
 
-declare const InstallTrigger: any;
+
 
 @Component({
   selector: 'app-note',
@@ -32,13 +33,10 @@ export class NoteComponent implements OnInit {
     ctrlPress: boolean = false;
     prevContent: string;
 
-    private isFirefox: boolean = false;
-
     constructor(private noteService: NoteService) { }
 
 
     ngOnInit() {
-        this.isFirefox = typeof InstallTrigger !== 'undefined';
     }
 
     /* Adds a new note */
@@ -102,7 +100,7 @@ export class NoteComponent implements OnInit {
     /* Marks the note as unsaved whenever a change is made */
     keyDown(e) {
 
-        if (this.isFirefox) {
+        if (Config.isFirefox) {
 
             switch (e.key) {
 //                case 'Enter':
@@ -150,7 +148,7 @@ export class NoteComponent implements OnInit {
 
     keyUp(e) {
 
-        if (this.isFirefox && e.key == 'Control') {
+        if (Config.isFirefox && e.key == 'Control') {
             this.ctrlPress = false;
         }
 

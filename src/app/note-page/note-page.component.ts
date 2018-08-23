@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
 import { UndoHandler } from '../classes/undoHandler';
+import { Config } from '../exports/config';
 
 
 
@@ -54,9 +55,12 @@ export class NotePageComponent implements OnInit {
 
     topNoteZ: number = 0;
 
-    undoHandler: UndoHandler = new UndoHandler();
+    undoHandler: UndoHandler;// = new UndoHandler();
 
     constructor(private noteService: NoteService) {
+        if (Config.isFirefox) {
+            this.undoHandler = new UndoHandler();
+        }
     }
 
     ngOnInit() {
