@@ -1,3 +1,12 @@
+/**
+    server.js
+
+    A server that
+        1. serves the angular web pages
+        2. updates the database with changes are made
+        3. updates all active clients when the database updates
+*/
+
 var http = require('http')
 	, https = require('https')
 	, fs = require('fs')
@@ -10,7 +19,7 @@ var http = require('http')
 	, pg = require('pg')
 	, port = process.env.PORT || 8080
 
-
+// Load the database url
 if (process.env.DATABASE_URL){
     var dbURL = process.env.DATABASE_URL;
 }
@@ -21,6 +30,7 @@ else {
 // open the database
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
+    // Create tables just in case they were somehow destroyed
     db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252))');
     db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512))');
     console.log("Successfully connected to database.");
@@ -29,10 +39,12 @@ db.connect().then(() => {
 	console.error(err)
 })
 
+// build server and socket
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
+// Set up user session cookie
 var secretStr = process.env.SECRET_STR ? process.env.SECRET_STR : "kuayborn98uno9y8vor8yaionvol ya";
 app.use(sessions({
     cookieName: 'session',
@@ -41,10 +53,11 @@ app.use(sessions({
     activeDuration: 3 * 24 * 60 * 60 * 1000,
 }));
 
+// force https
 app.use(rHTTPS([/localhost:(\d{4})/], [/\/insecure/]));
 
+// Load body message
 app.use((req, res, next) => {
-
     var data = '';
     req.on('data', (d) => data += d);
     req.on('end', () => {
@@ -53,6 +66,7 @@ app.use((req, res, next) => {
     });
 })
 
+// Load username from session, if present
 app.use((req, res, next) => {
     if (req.session && req.session.username) {
         req.user = req.session.username;
@@ -60,6 +74,7 @@ app.use((req, res, next) => {
     next();
 })
 
+// Check that a user session is already stored. If not, redirect to login page
 function requireLogin(req, res, next) {
     if (!req.user) {
         if(req.method == 'GET' && req.url == '/'){
@@ -76,6 +91,7 @@ function requireLogin(req, res, next) {
     }
 }
 
+// Bind urls and methods to functions -----------------------------------------
 app.get('/api', requireLogin, (req, res) => {
     getNotes(req, res);
 })
@@ -108,6 +124,7 @@ app.post('/changepassword', requireLogin, (req, res) =>{
     changePassword(req, res);
 })
 
+// default case, send over static angular webpage files
 app.all("*", (req, res, next) => {
 
     var uri = url.parse(req.url);
@@ -121,8 +138,11 @@ app.all("*", (req, res, next) => {
     }
     
 })
+// ----------------------------------------------------------------------------
 
-var activeClients = {};
+var activeClients = {}; // an object containing the socket ids of all active connections, sorted by username
+                        // Key == username
+                        // Value == array of socket ids belonging to that user
 
 // Set up sockets for updating active connections when data changes elsewhere
 io.on('connect', (socket) => {
@@ -173,7 +193,6 @@ function login(req, res) {
 
     // convert to json
     var input = JSON.parse(req.body);
-
 			
     var response = {}
 
