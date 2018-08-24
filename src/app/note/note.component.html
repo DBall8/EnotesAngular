@@ -7,8 +7,9 @@
             [style.font-size]="(note.fontSize + 4) + 'px'"
             [style.font-family]="note.font + ', Helvetica, sans-serif'"
             (mousedown)="$event.preventDefault();"
-            (dblclick)="$event.target.focus();"
-            (keydown)="keyDown($event)"/>
+            (dblclick)="selectTitle($event)"
+            (keydown)="keyDown($event)"
+            (keyup)="keyUp($event)"/>
         <input type="image" src="assets/x.png" alt="Delete" class="deleteButton button"
             (click)="deleteNote()"/>
     </div>

@@ -167,6 +167,12 @@ export class NoteComponent implements OnInit {
         if (this.undoHandler) this.undoHandler.track(this.prevContent, this);
     }
 
+    selectTitle(e) {
+        e.target.focus();
+        e.target.selectionStart = 0;
+        e.target.selectionEnd = this.note.title.length;
+    }
+
     resetUndo() {
         if (this.undoHandler) this.undoHandler.readyUndo();
     }

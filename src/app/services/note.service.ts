@@ -158,16 +158,16 @@ export class NoteService {
             this.http.request("PUT", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
-                    newtitle: note.title,
-                    newcontent: note.content,
-                    newx: note.x,
-                    newy: note.y,
-                    newW: note.width,
-                    newH: note.height,
-                    newFontSize: note.fontSize,
-                    newFont: note.font,
-                    newZ: note.zindex,
-                    newColors: note.colors,
+                    title: note.title,
+                    content: note.content,
+                    x: note.x,
+                    y: note.y,
+                    width: note.width,
+                    height: note.height,
+                    fontSize: note.fontSize,
+                    font: note.font,
+                    zindex: note.zindex,
+                    colors: note.colors,
                     socketid: this.socketID
                 }),
                 headers: httpHeaders
@@ -256,16 +256,16 @@ export class NoteService {
                 return;
             }
 
-            note.title = input.newtitle;
-            note.content = input.newcontent;
-            note.x = input.newx;
-            note.y = input.newy;
-            note.width = input.newW;
-            note.height = input.newH;
-            if (note.fontSize) { note.fontSize = input.newFontSize; }
-            if (note.font) { note.font = input.newFont; }
-            note.zindex = input.newZ;
-            note.colors = input.newColors;
+            note.title = input.title;
+            note.content = input.content;
+            note.x = input.x;
+            note.y = input.y;
+            note.width = input.width;
+            note.height = input.height;
+            if (note.fontSize) { note.fontSize = input.fontSize; }
+            if (note.font) { note.font = input.font; }
+            note.zindex = input.zindex;
+            note.colors = input.colors;
         })
 
         // Whenever a create event is received, create a note

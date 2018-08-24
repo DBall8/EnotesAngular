@@ -3,6 +3,6 @@ declare const InstallTrigger: any;
 
 export const Config = {
     DEBUG: false,
-    serverURL: "https://enotes.site",
+    serverURL: "localhost:8080",//"https://enotes.site",
     isFirefox: typeof InstallTrigger !== 'undefined'
 }
