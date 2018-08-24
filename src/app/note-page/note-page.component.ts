@@ -272,7 +272,7 @@ export class NotePageComponent implements OnInit {
 
     // Reloads the notes from the server
     refresh() {
-        this.noteService.getNotes();
+        this.noteService.refreshNotes();
     }
 
     // Opens and closes the options menu

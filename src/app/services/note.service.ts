@@ -62,6 +62,36 @@ export class NoteService {
         }
     }
 
+    /**
+        Same as get notes, except does not try to restart the socket
+    */
+    refreshNotes() {
+        console.log("REFRESH");
+        if (Config.DEBUG) {
+            this.notes = this.dummyNotes;
+        }
+        else {
+            this.http.request("GET", "/api", { observe: 'response', headers: httpHeaders }).subscribe((res) => {
+
+                if (res.status != 200) {
+                    window.alert(res.status + " Error.");
+                    return;
+                }
+                var body: any = res.body;
+
+                // If unsuccessfull, redirect to login page
+                if (body.sessionExpired || !body.successful) {
+                    this.redirect();
+                    return;
+                }
+
+                // On success, set up the note page
+                this.username = body.username;
+                this.loadNotes(body.notes);
+            }, (error) => console.error(error.error));
+        }
+    }
+
     /* Converts the response from the get notes HTTP request into an array of Note class instances
     @param ns An array of objects representing notes
     */
@@ -242,7 +272,12 @@ export class NoteService {
 
         // receive an ID from the server to identify this client socket
         this.socket.on("ready", (socketid) => {
+            if (this.socketID !== "") {
+                this.refreshNotes();
+            }
             this.socketID = socketid;
+            // Respond with a ready event
+            this.socket.emit("ready", this.username);
         })
 
         // Whenever an update event is received, update the corresponding note
@@ -284,9 +319,6 @@ export class NoteService {
         this.socket.on("delete", (tag) => {
             this.removeNote(tag);
         })
-
-        // Send a ready event
-        this.socket.emit("ready", this.username);
     }
 
     /* Searches the notes array for a note
