@@ -20,6 +20,7 @@ export class LoginComponent implements OnInit {
     @ViewChild('Username') usernameInput: ElementRef; // username field
     @ViewChild('Password') passwordInput: ElementRef; // password field
     @ViewChild('ConfirmPassword') confirmPasswordInput: ElementRef; // confirm password field (for new users)
+    @ViewChild('stayLogged') stayLoggedCheckbox: ElementRef;
 
     errorText: String = ""; // error message
     isLogin: boolean = true; // true if the user is logging in to an existing account, false if user is creating an account
@@ -46,11 +47,13 @@ export class LoginComponent implements OnInit {
             return;
         }
 
+        var stayLogged: boolean = this.stayLoggedCheckbox.nativeElement.checked;
+
         // If on log in page, attempt to log in
         if (this.isLogin) {
            
             // send a login request
-            this.loginService.login(username, password).subscribe((res: any) => {
+            this.loginService.login(username, password, stayLogged).subscribe((res: any) => {
                 if (res.status != 200) { // display error
                     this.errorText = res.status + " Error.";
                     return;
@@ -78,7 +81,7 @@ export class LoginComponent implements OnInit {
             }
 
             // send a create user request
-            this.loginService.createUser(username, password).subscribe((res: any) => {
+            this.loginService.createUser(username, password, stayLogged).subscribe((res: any) => {
                 // display error
                 if (res.status != 200) {
                     this.errorText = res.status + " Error.";

@@ -24,7 +24,7 @@ export class NoteService {
     changesSaved: boolean = true; // boolean for tracking if the the local notes have changed and the database should be updated
     username: String = '';
     socketID: String = "";
-    socket;
+    socket = null;
 
     dummyNotes = [
         new Note("note-123", "Title1", "test", 100, 100, 200, 200, ""),
@@ -66,7 +66,6 @@ export class NoteService {
         Same as get notes, except does not try to restart the socket
     */
     refreshNotes() {
-        console.log("REFRESH");
         if (Config.DEBUG) {
             this.notes = this.dummyNotes;
         }
@@ -268,6 +267,7 @@ export class NoteService {
     setupSocket() {
 
         // connect to server's socket
+        if (this.socket) this.socket.disconnect();
         this.socket = io(Config.serverURL, { secure: true });
 
         // receive an ID from the server to identify this client socket

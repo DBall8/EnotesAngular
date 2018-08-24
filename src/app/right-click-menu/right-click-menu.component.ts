@@ -91,7 +91,7 @@ export class RightClickMenuComponent implements OnInit {
     }
 
     pasteText() {
-        console.log();
+        window.alert("Please use the keyboard shortcut (Ctrl + v) to paste.");
     }
 
 }

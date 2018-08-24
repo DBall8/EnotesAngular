@@ -29,13 +29,6 @@ db.connect().then(() => {
 	console.error(err)
 })
 
-/*
-var options = {
-	key: fs.readFileSync('key.pem'),
-	cert: fs.readFileSync('cert.pem')
-};
-*/
-
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
@@ -138,15 +131,35 @@ io.on('connect', (socket) => {
     socket.emit("ready", socket.id);
 
     socket.on("ready", (username) => {
-        activeClients[socket.id] = { username: username, socket: socket };
+        // Add the socket id to the user's list of active sessions
+        if(activeClients[username]){
+            activeClients[username].push(socket.id);
+        }
+        // If not active sessions yet, initialize the array as well
+        else{
+            activeClients[username] = [socket.id];
+        }
+        
         console.log(username + " is ready");
     })
 
     socket.on('disconnect', () => {
-        console.log(socket.id + " disconnected.");
-        if (activeClients[socket.id]) {
-            delete activeClients[socket.id]
-        }
+        // Loop through each user's sessions and remove whichever socket id was disconnected
+        Object.keys(activeClients).map((key) => {
+
+            // go through each of the user's socket ids and remove any that match the disconnected id
+            var i = activeClients[key].length;
+            while(i--){
+                if(activeClients[key][i] === socket.id){
+                    activeClients[key].splice(i, 1);
+                    console.log(socket.id + " disconnected");
+                }    
+            }
+            // remove any empty arrays
+            if(activeClients[key].length <= 0){
+                delete activeClients[key]
+            }
+        });
     })
 })
 
@@ -347,15 +360,16 @@ function addNote(req, res) {
         // successful
         console.log(input.tag + " successfully added")
 
-        // notifty active connections that the note has been created
-        Object.keys(activeClients).map((key => {
-            if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                // Create a copy of the message received except without socketid
-                var emission = JSON.parse(JSON.stringify(input))
-                delete emission['socketid'];
-                activeClients[key].socket.emit("create", JSON.stringify(emission));
-            }
-        }))
+        if(activeClients[req.user]){
+            activeClients[req.user].map((socketid) => {
+                if (socketid != input.socketid) {
+                    // Create a copy of the message received except without socketid
+                    var emission = JSON.parse(JSON.stringify(input))
+                    delete emission['socketid'];
+                    io.sockets.sockets[socketid].emit("create", JSON.stringify(emission));
+                }
+            })
+        }
 
         res.writeHead(200);
         var response = {
@@ -384,11 +398,14 @@ function deleteNote(req, res){
         console.log(input.tag + " successfully deleted")
 
         // notifty active connections that the note has been deleted
-        Object.keys(activeClients).map((key => {
-            if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                activeClients[key].socket.emit("delete", input.tag);
-            }
-        }))
+        if(activeClients[req.user]){
+            activeClients[req.user].map((socketid) => {
+                if (socketid != input.socketid) {
+                    // Create a copy of the message received except without socketid
+                    io.sockets.sockets[socketid].emit("delete", input.tag);
+                }
+            })
+        }
 
         res.writeHead(200)
         var response = {
@@ -417,27 +434,28 @@ function updateNote(req, res){
     db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontSize=$7, font=$8, zindex=$9, colors=$10 WHERE username=$11 AND tag=$12", arr).then(() => {
 
         // notifty active connections that the note has updated
-        Object.keys(activeClients).map((key => {
-            if (activeClients[key].username == req.user && activeClients[key].socket.id != input.socketid) {
-                // Create a copy of the message received except without socketid
-                var emission = JSON.parse(JSON.stringify(input))
-                delete emission['socketid'];
-                activeClients[key].socket.emit("update", JSON.stringify(emission));
-            }
-        }))
+        if(activeClients[req.user]){
+            activeClients[req.user].map((socketid) => {
+                if (socketid != input.socketid) {
+                    // Create a copy of the message received except without socketid
+                    var emission = JSON.parse(JSON.stringify(input))
+                    delete emission['socketid'];
+                    io.sockets.sockets[socketid].emit("update", JSON.stringify(emission));
+                }
+            })
+        }
         
-
-            res.writeHead(200)
-            var response = {
-                successful: true,
-                sessionExpired: false
-            }
-            res.end(JSON.stringify(response));
-        }, (err) => {
-            console.error("ERROR could not update note" + input.tag + ":\n" + err);
-            res.writeHead(500)
-            res.end()
-        });
+        res.writeHead(200)
+        var response = {
+            successful: true,
+            sessionExpired: false
+        }
+        res.end(JSON.stringify(response));
+    }, (err) => {
+        console.error("ERROR could not update note" + input.tag + ":\n" + err);
+        res.writeHead(500)
+        res.end()
+    });
 }
 
 // send all the notes stored for a user
