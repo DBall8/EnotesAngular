@@ -53,8 +53,6 @@ export class NotePageComponent implements OnInit {
         offsetY: 0
     };
 
-    topNoteZ: number = 0;
-
     undoHandler: UndoHandler;// = new UndoHandler();
 
     constructor(private noteService: NoteService) {
@@ -156,29 +154,30 @@ export class NotePageComponent implements OnInit {
     @param note The note to bring to the front
     */
     selectNote(note: Note) {
-
-        if (this.topNoteZ <= 0) {
-            this.findTopNoteZ()
-        }
-
+        
         // If the note is already selected, do nothing
         if (note.selected) {
             return;
         }
+
+        var topZ: number = 0;
         
-        // deselect all notes
+        // deselect all notes, and find the highest z index
         this.noteService.notes.map((n: Note) => {
             if (n.selected) n.selected = false;
+            if (n.zindex > topZ) {
+                topZ = n.zindex
+            }
         });
 
-        if (this.topNoteZ >= TOPZ) {
+        if (topZ >= TOPZ) {
             this.restackNotes();
+            topZ = BOTTOMZ + this.noteService.notes.length;
         }
 
         // select the given note and bring it to the top
         note.selected = true;
-        this.topNoteZ++;
-        note.zindex = this.topNoteZ;
+        note.zindex = topZ + 1;
         this.noteService.updateNote(note);
     }
 
@@ -206,17 +205,6 @@ export class NotePageComponent implements OnInit {
             notes[i].zindex = BOTTOMZ + i;
             this.noteService.updateNote(notes[i]);
         }
-
-        this.topNoteZ = BOTTOMZ + len;
-    }
-
-    /* Finds the highest zindex of all notes */
-    findTopNoteZ() {
-        this.noteService.notes.map((n: Note) => {
-            if (n.zindex > this.topNoteZ) {
-                this.topNoteZ = n.zindex
-            }
-        })
     }
 
     /* Starts a note drag event

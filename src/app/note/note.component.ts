@@ -169,8 +169,10 @@ export class NoteComponent implements OnInit {
 
     selectTitle(e) {
         e.target.focus();
-        e.target.selectionStart = 0;
-        e.target.selectionEnd = this.note.title.length;
+        if (this.note.title) {
+            e.target.selectionStart = 0;
+            e.target.selectionEnd = this.note.title.length;
+        }
     }
 
     resetUndo() {
