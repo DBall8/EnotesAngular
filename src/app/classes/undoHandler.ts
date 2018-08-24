@@ -1,6 +1,6 @@
 import { NoteComponent } from '../note/note.component';
 
-const MAXUNDO: number = 4;
+const MAXUNDO: number = 40;
 const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
 
 
