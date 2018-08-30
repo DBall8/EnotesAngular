@@ -1,13 +1,62 @@
 <div class="accountSettingsPage" [style.display]="display? 'block': 'none'">
     <button type="button" class="closeButton" (click)="close()">X</button>
     <h1>Account Settings</h1>
-    <div class="changePasswordDiv">
+    <div class="settingDiv">
+        <h2>Text Size</h2>
+        <div class="inputsDiv">
+            <input name="textSize" type="radio" id="textSmall"/> <label for="textSmall" class="radioLabel">Small</label><br />
+            <input name="textSize" type="radio" id="textMedium"/> <label for="textMedium" class="radioLabel">Medium</label><br />
+            <input name="textSize" type="radio" id="textLarge"/> <label for="textLarge" class="radioLabel">Large</label><br />
+        </div>
+    </div>
+    <div class="settingDiv">
+        <h2>Default Color</h2>
+        <div class="inputsDiv">
+            <input name="dColor" type="radio" id="colorYellow" /> <label for="colorYellow" class="radioLabel" style="color: #ffe062">Yellow</label><br />
+            <input name="dColor" type="radio" id="colorOrange"/> <label for="colorOrange" class="radioLabel" style="color: #ffa63d">Orange</label><br />
+            <input name="dColor" type="radio" id="colorRed"/> <label for="colorRed" class="radioLabel" style="color: #f97e7e">Red</label><br />
+            <input name="dColor" type="radio" id="colorGreen"/> <label for="colorGreen" class="radioLabel" style="color: #53ce57">Green</label><br />
+            <input name="dColor" type="radio" id="colorBlue"/> <label for="colorBlue" class="radioLabel" style="color: #7fc8f5">Blue</label><br />
+            <input name="dColor" type="radio" id="colorPurple"/> <label for="colorPurple" class="radioLabel" style="color: #e083f7">Purple</label><br />
+        </div>
+    </div>
+    <div class="settingDiv">
+        <h2>Default Font</h2>
+        <div class="inputsDiv">
+            <input name="dFont" type="radio" id="fontArial"/> <label for="fontArial" class="radioLabel">Arial</label><br />
+            <input name="dFont" type="radio" id="fontPalantino"/> <label for="fontPalantino" class="radioLabel">Palatino Linotype</label><br />
+            <input name="dFont" type="radio" id="fontCourier"/> <label for="fontCourier" class="radioLabel">Courier New</label><br />
+        </div>
+    </div>
+    <div class="settingDiv">
+        <h2>Default Font Size</h2>
+        <div class="inputsDiv">
+            <input name="dFontSize" type="radio" id="d10"/> <label for="d10" class="radioLabel">10 pt</label><br />
+            <input name="dFontSize" type="radio" id="d12"/> <label for="d12" class="radioLabel">12 pt</label><br />
+            <input name="dFontSize" type="radio" id="d14"/> <label for="d14" class="radioLabel">14 pt</label><br />
+            <input name="dFontSize" type="radio" id="d18"/> <label for="d18" class="radioLabel">18 pt</label><br />
+            <input name="dFontSize" type="radio" id="d24"/> <label for="d24" class="radioLabel">24 pt</label><br />
+            <input name="dFontSize" type="radio" id="d32"/> <label for="d32" class="radioLabel">32 pt</label><br />
+        </div>
+    </div>
+    <div class="settingDiv" id="changePasswordDiv">
         <h2>Change Password</h2>
-        <div><p>Old Password:</p><input #OldPassword type="password" (input)="onType()"/></div><br />
-        <div><p>New Password:</p><input #NewPassword type="password" (input)="onType()"/></div><br />
-        <div><p>Confirm New Password:</p><input #ConfirmPassword type="password" (input)="onType()"/></div><br />
-        <p [style.display]="errorText? 'inline-block': 'none'" class="error">{{errorText}}</p><br />
-        <button class="bottomButton updateButton" (click)="updatePassword()">Update Password</button>
+        <div class ="inputsDiv">
+            <table>
+                <tr>
+                    <td><label>Old Password:</label></td><td><input #NewPassword type="password" (input)="onType()"/></td>
+                </tr>
+                <tr>
+                    <td><label>New Password:</label></td><td><input #OldPassword type="password" (input)="onType()"/></td>
+                </tr>
+                <tr>
+                    <td><label>Confirm New Password:</label></td><td><input #ConfirmPassword type="password" (input)="onType()"/></td>
+                </tr>
+
+            </table>
+            <p [style.display]="errorText? 'inline-block': 'none'" class="error">{{errorText}}</p><br />
+            <button class="bottomButton updateButton" (click)="updatePassword()">Update Password</button>
+        </div>
     </div>
     <button class="bottomButton cancelButton" (click)="close()">Close</button><div style="clear:both"></div>
     
