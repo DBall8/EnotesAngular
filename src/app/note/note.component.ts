@@ -32,6 +32,7 @@ export class NoteComponent implements OnInit {
 
     ctrlPress: boolean = false;
     prevContent: string;
+    prevTitle: string
 
     constructor(private noteService: NoteService) { }
 
@@ -98,7 +99,7 @@ export class NoteComponent implements OnInit {
     }
 
     /* Marks the note as unsaved whenever a change is made */
-    keyDown(e) {
+    keyDown(e, inTitle) {
 
         if (Config.isFirefox) {
 
@@ -123,7 +124,7 @@ export class NoteComponent implements OnInit {
                     // prevent default behavior
                     e.preventDefault();
 
-                    if(this.undoHandler) this.undoHandler.track(this.note.content, this);
+                    this.track(inTitle);
 
                     var cursorStart = this.contentArea.nativeElement.selectionStart;
                     var cursorEnd = this.contentArea.nativeElement.selectionEnd;
@@ -135,13 +136,20 @@ export class NoteComponent implements OnInit {
                         this.contentArea.nativeElement.selectionStart = cursorStart + 1;
                         this.contentArea.nativeElement.selectionEnd = cursorStart + 1;
                     });
+                    break;
                 case 'Control':
                     if (!this.ctrlPress) {
                         this.ctrlPress = true;
                     }
                     break;
                 default:
-                    this.prevContent = this.note.content;
+                    if (inTitle) {
+                        this.prevTitle = this.note.title;
+                    }
+                    else {
+                        this.prevContent = this.note.content;
+                    }
+                    
                 
             }
         }
@@ -153,28 +161,72 @@ export class NoteComponent implements OnInit {
         
     }
 
+    /**
+        Event that fires whenever a key is released in when in the note
+    */
     keyUp(e) {
-
+        // If in firefox, mark control as un-pressed
         if (Config.isFirefox && e.key == 'Control') {
             this.ctrlPress = false;
         }
 
+        // mark note as unsaved and note page as unsaved
         this.note.saved = false;
         this.noteService.changesSaved = false;
     }
 
-    onInput() {
-        if (this.undoHandler) this.undoHandler.track(this.prevContent, this);
-    }
-
+    /**
+        Called when a title is double clicked
+    */
     selectTitle(e) {
+        // focus title and make editable
         e.target.focus();
+        e.target.readOnly = false;
+        // Select title
         if (this.note.title) {
             e.target.selectionStart = 0;
             e.target.selectionEnd = this.note.title.length;
         }
     }
 
+    /**
+        Called when a title is clicked
+    */
+    titleClick(e) {
+        // ready a new undo
+        this.resetUndo();
+        // Prevent cursor selection if not being edited
+        if (e.target.readOnly) {
+            e.preventDefault();
+        }
+    }
+
+    /**
+        Called when title loses focus
+    */
+    deselectTitle(e) {
+        // put title back tor read only
+        e.target.readOnly = true;
+    }
+
+    /**
+        Adds a new undoable state to the undohandler
+    */
+    track(inTitle: boolean) {
+        // Make sure undo object exists
+        if (!this.undoHandler) return;
+        // Save title if event called in the title, or content if called in note content
+        if (inTitle) {
+            this.undoHandler.track(this.prevTitle, this, inTitle);
+        }
+        else {
+            this.undoHandler.track(this.prevContent, this, inTitle);
+        }
+    }
+
+    /**
+        Resets undo counter to be ready for another undo state
+    */
     resetUndo() {
         if (this.undoHandler) this.undoHandler.readyUndo();
     }
@@ -196,8 +248,19 @@ export class NoteComponent implements OnInit {
         });
     }
 
-    public castUndo(str: string) {
+    /**
+        Changes a note to reflect the undo state being reverted to
+    */
+    public castUndo(str: string, inTitle: boolean) {
         if (str !== null) {
+
+            // if in title, simply update title
+            if (inTitle) {
+                this.note.title = str;
+                return;
+            }
+
+            // otherwise update note content and reset cursor after updates appear on screen
             var cursorStart = this.contentArea.nativeElement.selectionStart;
             var cursorEnd = this.contentArea.nativeElement.selectionEnd;
 

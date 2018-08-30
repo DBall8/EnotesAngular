@@ -7,12 +7,12 @@
 	<div class="contentPanel">
 		<form>
 			<label>Username:</label><br />
-			<input #Username class="loginInput" type="text" (keyup)="submit($event.key)" /><br />
+			<input #Username class="loginInput" type="text" maxlength="252" (keyup)="submit($event.key)" /><br />
 			<label>Password:</label><br />
-			<input #Password class="loginInput" type="password" (keyup)="submit($event.key)" /><br />
+			<input #Password class="loginInput" type="password" maxlength="252" (keyup)="submit($event.key)" /><br />
             <div [style.display]="isLogin? 'none': 'block'">
                 <label>Confirm password:</label><br />
-                <input #ConfirmPassword class="loginInput" type="password"/>
+                <input #ConfirmPassword class="loginInput" type="password" maxlength="252" (keyup)="submit($event.key)"/>
             </div>
 			<input class="checkbox" type="checkbox" #stayLogged checked="true"/>Stay logged in
 			<br />

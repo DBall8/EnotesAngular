@@ -7,7 +7,8 @@ const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
 // Interface for holding an undoable event
 interface UndoObj {
     str: string, // the contents of the note to revert to
-    note: NoteComponent // the note component class to display the contents in
+    note: NoteComponent, // the note component class to display the contents in
+    inTitle: boolean
 }
 
 
@@ -31,12 +32,13 @@ export class UndoHandler {
     /**
         Creates a new undo state that can be returned to
     */
-    public track(str: string, note: NoteComponent) {
+    public track(str: string, note: NoteComponent, inTitle: boolean) {
         // If the enough time or actions have taken place since the last undo saved, save a new undo
         if (this.undoIntervalReady) {
             var newUndo: UndoObj = {
                 str: str,
-                note: note
+                note: note,
+                inTitle: inTitle
             }
             this.pushUndo(newUndo);
         }
@@ -49,7 +51,7 @@ export class UndoHandler {
         // get the last undo state
         var undoObj: UndoObj = this.popUndo();
         // if there is an available state, tell its note component to return to this state
-        if (undoObj) undoObj.note.castUndo(undoObj.str);
+        if (undoObj) undoObj.note.castUndo(undoObj.str, undoObj.inTitle);
     }
 
     /**
@@ -59,7 +61,7 @@ export class UndoHandler {
         // get the last undo action
         var undoObj: UndoObj = this.callRedo();
         // if there is an available state, tell the note component to return to it
-        if (undoObj) undoObj.note.castUndo(undoObj.str);
+        if (undoObj) undoObj.note.castUndo(undoObj.str, undoObj.inTitle);
     }
 
     /**
@@ -90,8 +92,15 @@ export class UndoHandler {
 
         // get the undo state being popped
         var undoObj = this.undoArray[this.undoEnd];
+
         // save a redo state where the undoEnd index was before, with the note component's state before the undo
-        this.undoArray[undoIndex] = { str: undoObj.note.note.content, note: undoObj.note }
+        var redoObj;
+        if (undoObj.inTitle) {
+            redoObj = { str: undoObj.note.note.title, note: undoObj.note, inTitle: undoObj.inTitle }
+        } else {
+            redoObj = { str: undoObj.note.note.content, note: undoObj.note, inTitle: undoObj.inTitle }
+        }
+        this.undoArray[undoIndex] = redoObj;
 
         return undoObj;
     }
@@ -154,7 +163,13 @@ export class UndoHandler {
         // get the redo state object
         var undoObj = this.undoArray[this.undoEnd];
         // add a new undo state with the redone state's state so that this redone change can be undone again
-        this.undoArray[undoIndex] = { str: undoObj.note.note.content, note: undoObj.note }
+        var redoObj;
+        if (undoObj.inTitle) {
+            redoObj = { str: undoObj.note.note.title, note: undoObj.note, inTitle: undoObj.inTitle }
+        } else {
+            redoObj = { str: undoObj.note.note.content, note: undoObj.note, inTitle: undoObj.inTitle }
+        }
+        this.undoArray[undoIndex] = redoObj;
 
         return undoObj;
     }
