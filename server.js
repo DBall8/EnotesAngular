@@ -337,7 +337,7 @@ function changePassword(req, res){
             res.end();
             return;
         }
-        if(resolve){ // successful login!
+        if(resolve && resolve.successful){ // successful login!
 
             // Generate a new salt and hash from the new password
             // generate a 128 byte salt
