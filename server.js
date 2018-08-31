@@ -21,7 +21,7 @@ else {
 // open the database
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
-    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252))');
+    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dFont VARCHAR(50), dFontSize INTEGER, dColor VARCHAR(50))');
     db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512))');
     console.log("Successfully connected to database.");
 }, (err) =>{
@@ -90,6 +90,10 @@ app.put('/api', requireLogin, (req, res) => {
 
 app.delete('/api', requireLogin, (req, res) => {
     deleteNote(req, res);
+})
+
+app.post('/user', requireLogin, (req, res) => {
+    updateUserSettings(req, res);
 })
 
 app.post('/login', (req, res) => {
@@ -174,9 +178,6 @@ function login(req, res) {
     // convert to json
     var input = JSON.parse(req.body);
 
-			
-    var response = {}
-
     // Attempt to log in the user with the given username and password
     attemptLogin(input.username, input.password).then((resolve, reject) => {
         if(reject){ // connection error
@@ -188,16 +189,10 @@ function login(req, res) {
         if(resolve){ // successful login!
             // Save session
             req.session.username = input.username;
-            // build a response object stating that the login was successful and send the generated sessionID
-            response = { successful: true };
-        }
-        else{
-            // if login failed, send a response stating it was unsuccessful
-            response = {successful: false};
         }
         // send response
         res.writeHead(200);
-        res.end(JSON.stringify(response));
+        res.end(JSON.stringify(resolve));
     })
 }
 
@@ -206,29 +201,37 @@ function attemptLogin(username, password){
 
     return new Promise((res, rej) => {
 
-
         db.query("SELECT * FROM users WHERE username=$1", [username], function(err, resp){
             if(err){
                 console.error("ERROR: could not access usernames\n" + err);
                 rej(true);
             }
             else{
-                resp.rows.map((row) => {
+                for(var i=0; i<resp.rows.length; i++){
+                    var row = resp.rows[i];
                     // hash the password with the same salt and see if it matches the hash saved for that username
                     var hash = crypto.createHmac('sha512', row.salt);
                     hash.update(password);
                     var hashVal = hash.digest('hex');
                     if(hashVal === row.hash){
                         console.log("PASSWORDS MATCHED: " + username)
-                        res(true);
+                        res({ 
+                            successful: true,
+                            dFont: row.dfont,
+                            dFontSize: row.dfontsize,
+                            dColor: row.dcolor
+                        });
+                        return;
                     }
                     else{
                         console.log("PASSWORDS DID NOT MATCH: " + username);
-                        res(false);
+                        res({ successful: false});
+                        return;
                     }
-                })
-                // User does not exist
-                res(false);
+                }
+            // User does not exist
+                console.log("USER DOES NOT EXIST: " + username);
+                res({ successfull: false});
             }
         })
     });
@@ -300,6 +303,27 @@ function newUser(username, password, req, res){
         console.error("ERROR could not insert new user:\n" + err);
         res.writeHead(500);
     });
+}
+
+function updateUserSettings(req, res){
+    var input = JSON.parse(req.body);
+
+    var arr = [input.dFont, input.dFontSize, input.dColor, req.user];
+    db.query("UPDATE users SET dFont= $1, dFontSize=$2, dColor=$3 WHERE username=$4", arr).then(() => {
+        res.writeHead(200)
+        var response = {
+            successful: true,
+            sessionExpired: false
+        }
+        res.end(JSON.stringify(response));
+    }, (err) =>{
+        console.log("Failed to update user settings: " + err);
+        res.writeHead(500)
+        var response = {
+            successful: false,
+        }
+        res.end(JSON.stringify(response));
+    })
 }
 
 function changePassword(req, res){

@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
+import { Settings } from '../classes/Settings';
+
 const httpHeaders: HttpHeaders = new HttpHeaders({
     'Content-Type': 'application/json',
     'credentials': 'same-origin'
@@ -41,6 +43,16 @@ export class LoginService {
             observe: 'response', body: JSON.stringify({
                 oldpassword: oldPassword,
                 newpassword: newPassword
+            }), headers: httpHeaders
+        });
+    }
+
+    updateUserSettings() {
+        return this.http.request("POST", "/user", {
+            observe: 'response', body: JSON.stringify({
+                dFont: Settings.dFont,
+                dFontSize: Settings.dFontSize,
+                dColor: Settings.dColor
             }), headers: httpHeaders
         });
     }

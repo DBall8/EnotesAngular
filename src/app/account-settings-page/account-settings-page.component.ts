@@ -128,7 +128,15 @@ export class AccountSettingsPageComponent implements OnInit {
         });
 
         Settings.save();
-        this.close();
+
+        this.loginService.updateUserSettings().subscribe((res: any) => {
+            if (res.status != 200 || !res.body.successful) {
+                this.errorText = "Failed to update settings. Please try again later.";
+            }
+            else {
+                this.close();
+            }
+        });
     }
 
     updatePassword() {

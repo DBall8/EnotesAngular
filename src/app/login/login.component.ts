@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { LoginService } from '../services/login.service';
+import { Settings } from '../classes/Settings';
 
 /* Login
 
@@ -60,6 +61,13 @@ export class LoginComponent implements OnInit {
                 }
                 // on success, navigate to notes page
                 if (res.body.successful) {
+
+                    Settings.restoreDefaults(false);
+                    if (res.body.dFont) Settings.dFont = res.body.dFont;
+                    if (res.body.dFontSize) Settings.dFontSize = res.body.dFontSize;
+                    if (res.body.dColor) Settings.dColor = res.body.dColor;
+                    Settings.save();
+
                     this.router.navigate(['/']);
                 }
                 else { // display error
