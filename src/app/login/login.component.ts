@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
     @param password The given password input
     @param confirmPassword The confirm password field input
     */
-    login(username: String, password: String, confirmPassword: String) {
+    login(username: string, password: string, confirmPassword: string) {
 
         // Make sure neither field is blank
         if (!username) {

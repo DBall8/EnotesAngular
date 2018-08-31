@@ -277,7 +277,14 @@ export class NoteComponent implements OnInit {
     }
 
     calculateTextSize(isTitle: boolean) {
-        var size: number = this.note.fontSize;
+        var size: number;
+        if (this.note.fontSize) {
+            size = this.note.fontSize;
+        }
+        else {
+            size = 12;
+        }
+        
         if (isTitle) size += 4;
         switch (Settings.textSize) {
             case "Small":
