@@ -5,6 +5,7 @@ import { Note } from '../classes/note';
 import { ColorChart } from '../exports/ColorChart';
 import { UndoHandler } from '../classes/undoHandler';
 import { Config } from '../exports/config';
+import { Settings } from '../classes/Settings';
 
 /* NoteComponent
 
@@ -273,5 +274,24 @@ export class NoteComponent implements OnInit {
                 this.contentArea.nativeElement.selectionEnd = newPos;
             });
         }
+    }
+
+    calculateTextSize(isTitle: boolean) {
+        var size: number = this.note.fontSize;
+        if (isTitle) size += 4;
+        switch (Settings.textSize) {
+            case "Small":
+                size += 0;
+                break;
+            default:
+            case "Medium":
+                size += 4;
+                break;
+            case "Large":
+                size += 8;
+                break;
+        }
+
+        return size + 'px'
     }
 }

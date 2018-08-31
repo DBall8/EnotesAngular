@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import * as io from 'socket.io-client';
 
 import { Config } from '../exports/config';
+import { Settings } from '../classes/Settings';
 import { Note } from '../classes/note';
 import { ColorChart } from '../exports/ColorChart';
 
@@ -137,6 +138,9 @@ export class NoteService {
     addNote(x: number, y: number) {
         // Create a new note isntance that is empty
         var note: Note = new Note('note-' + new Date().getTime(), "", "", x, y, 200, 200, ColorChart.yellow);
+        if(Settings.dFont) note.font = Settings.dFont;
+        if (Settings.dFontSize) note.fontSize = Settings.dFontSize;
+        if (Settings.dColor) note.colors = ColorChart[Settings.dColor.toLowerCase()];
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);
