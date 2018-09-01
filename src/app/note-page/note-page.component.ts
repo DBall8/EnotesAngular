@@ -6,7 +6,7 @@ import { Note } from '../classes/note';
 import { UndoHandler } from '../classes/undoHandler';
 import { Config } from '../exports/config';
 
-
+const MAX_HEIGHT: number = 130;
 
 /* NotePageComponent
 
@@ -117,6 +117,8 @@ export class NotePageComponent implements OnInit {
         if (this.drag.note) {
             this.drag.note.x = e.clientX - this.drag.offsetX;
             this.drag.note.y = e.clientY - this.drag.offsetY;
+            if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
+            
         }
         // If a note resize is in progress, update the notes size
         if (this.resize.note) {
