@@ -1,4 +1,4 @@
-var http = require('http')
+﻿var http = require('http')
 	, https = require('https')
 	, fs = require('fs')
 	, qs = require('querystring')
@@ -493,6 +493,14 @@ function getNotes(req, res) {
 	
     // collect all notes stored for the user in an array
     db.query("SELECT tag, title, content, x, y, width, height, fontSize, font, zindex, colors FROM notes WHERE username=$1", [username], function(error, resp){
+
+        if (error) {
+            console.log("Could not retrieve notes for user: " + error);
+            res.writeHead(500);
+            res.end();
+            return;
+        }
+
         // send the array
         res.writeHead(200, {'Content-type': 'application/json'});
         var response = {
