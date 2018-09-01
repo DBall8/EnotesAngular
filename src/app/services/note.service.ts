@@ -24,6 +24,7 @@ export class NoteService {
     notes: Note[] = [];
     notePages: NotePage[] = [];
 
+    currentPageID: string = "";
     changesSaved: boolean = true; // boolean for tracking if the the local notes have changed and the database should be updated
     username: String = '';
     socketID: String = "";
@@ -48,7 +49,8 @@ export class NoteService {
         if (Config.DEBUG) {
             this.notes = this.dummyNotes;
             this.notePages = this.dummyPages;
-            this.notePages[0].active = true;
+            if (this.notePages.length <= 0) this.addNotePage("Main Page");
+            this.selectNotePage(this.notePages[0]);
         }
         else {
             this.http.request("GET", "/api", { observe: 'response', headers: httpHeaders }).subscribe((res) => {
@@ -277,8 +279,8 @@ export class NoteService {
         }
     }
 
-    addNotePage() {
-        var newPage: NotePage = new NotePage("page-" + new Date().getTime(), "");
+    addNotePage(name) {
+        var newPage: NotePage = new NotePage("page-" + new Date().getTime(), name);
         this.notePages.push(newPage);
     }
 
@@ -289,6 +291,14 @@ export class NoteService {
                 break;
             }
         }
+        if (this.notePages.length <= 0) this.addNotePage("Main Page");
+        this.selectNotePage(this.notePages[0]);
+    }
+
+    selectNotePage(page: NotePage) {
+        this.notePages.map((page) => page.active = false);
+        this.currentPageID = page.pageID;
+        page.active = true;
     }
 
     /* Sets up a socket that notifies this client any time a change is made elsewhere */

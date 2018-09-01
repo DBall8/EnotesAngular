@@ -270,13 +270,18 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.visible = true;
     }
 
-    tabClick(clickedPage) {
-        this.noteService.notePages.map((page) => page.active = false);
-        clickedPage.active = true;
+    tabClick(page) {
+        this.noteService.selectNotePage(page);
     }
 
     tabInputClick(e) {
         if (!e.target.readOnly) {
+            e.preventDefault();
+        }
+    }
+
+    filterKeys(e) {
+        if (e.key == 'Enter') {
             e.preventDefault();
         }
     }
@@ -296,7 +301,7 @@ export class NotePageComponent implements OnInit {
     }
 
     addTab() {
-        this.noteService.addNotePage();
+        this.noteService.addNotePage("");
     }
 
     deleteTab(page) {
