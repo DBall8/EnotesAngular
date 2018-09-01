@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -8,6 +8,7 @@ import * as io from 'socket.io-client';
 import { Config } from '../exports/config';
 import { Settings } from '../classes/Settings';
 import { Note } from '../classes/note';
+import { NotePage } from '../classes/notePage';
 import { ColorChart } from '../exports/ColorChart';
 
 const httpHeaders: HttpHeaders = new HttpHeaders({
@@ -21,6 +22,7 @@ const httpHeaders: HttpHeaders = new HttpHeaders({
 export class NoteService {
     
     notes: Note[] = [];
+    notePages: NotePage[] = [];
 
     changesSaved: boolean = true; // boolean for tracking if the the local notes have changed and the database should be updated
     username: String = '';
@@ -33,12 +35,20 @@ export class NoteService {
         new Note("note-789", "RUN", "test2", 800, 300, 400, 400, "")
     ];
 
+    dummyPages = [
+        new NotePage("p-1", "Main"),
+        new NotePage("p-2", "Work"),
+        new NotePage("p-3", "Food")
+    ]
+
 
     constructor(private http: HttpClient, private router: Router) { }
 
     getNotes() {
         if (Config.DEBUG) {
             this.notes = this.dummyNotes;
+            this.notePages = this.dummyPages;
+            this.notePages[0].active = true;
         }
         else {
             this.http.request("GET", "/api", { observe: 'response', headers: httpHeaders }).subscribe((res) => {
@@ -262,6 +272,20 @@ export class NoteService {
         for (var i = 0; i < this.notes.length; i++) {
             if (this.notes[i].id === noteID) {
                 this.notes.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    addNotePage() {
+        var newPage: NotePage = new NotePage("page-" + new Date().getTime(), "");
+        this.notePages.push(newPage);
+    }
+
+    deleteNotePage(pageID) {
+        for (var i = 0; i < this.notePages.length; i++) {
+            if (this.notePages[i].pageID === pageID) {
+                this.notePages.splice(i, 1);
                 break;
             }
         }

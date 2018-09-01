@@ -1,4 +1,4 @@
-
+﻿
 <h1 class="title"><span class="welcomeMessage">Welcome {{getUsername()}}!</span>
     <div class="rightFloat optionsContainer">
         <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
@@ -7,16 +7,26 @@
     </div>
 
 </h1>
-<!--
-<nav class="tabBar">
-    <h1>Pages</h1>
-    <div class="tab">
-        Test
-    </div>
-    <div class="tab">
-        Test a longer word
-    </div>
-</nav> ->>
+<!-- Pages -->
+<div class="tabBar">
+  <div class="tab" *ngFor="let page of this.noteService.notePages"
+       [class]="page.active? 'tab selectedTab': 'tab unselectedTab'"
+        (dblclick)="editTab($event.target, page.name.length)"
+       (click)="tabClick(page)">
+    <p type="text"  class="tabInput" readonly 
+       contenteditable="false" maxlength="100"
+       (mousedown)="tabInputClick($event)"
+       (blur)="blurTab($event, page)">{{page.name}}
+    </p>
+    <input type="image" src="assets/xsmall.png" class="xbutton" contenteditable="false"
+           (click)="deleteTab(page)"/>
+    
+  </div>
+  <div class="tab">
+    <input class="plusbutton" type="image" src="assets/smallplus.png"
+           (click)="addTab()" />
+  </div>
+</div>
 
 <!-- Notes -->
 <div *ngFor="let note of getNotes()" (onmousemove)="mouseMove()">

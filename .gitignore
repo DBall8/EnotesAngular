@@ -5,6 +5,7 @@
 /test
 *.zip
 secrets.js
+*.xcf
 
 # compiled output
 

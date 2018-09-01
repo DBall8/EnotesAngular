@@ -1,4 +1,4 @@
-
+﻿
 import { Component, OnInit } from '@angular/core';
 
 import { NoteService } from '../services/note.service';
@@ -268,6 +268,41 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.subMenu = '';
         // display the rcm
         this.rcmDisplay.visible = true;
+    }
+
+    tabClick(clickedPage) {
+        this.noteService.notePages.map((page) => page.active = false);
+        clickedPage.active = true;
+    }
+
+    tabInputClick(e) {
+        if (!e.target.readOnly) {
+            e.preventDefault();
+        }
+    }
+
+    editTab(target, length) {
+        //target = target.children[0];
+        target.contentEditable = true;
+        target.readOnly = true;
+        target.focus();
+        target.selectionStart = 0;
+        target.selectionEnd = length-1;
+    }
+
+    blurTab(e, page) {
+        e.target.contentEditable = false;
+        page.name = e.target.textContent;
+    }
+
+    addTab() {
+        this.noteService.addNotePage();
+    }
+
+    deleteTab(page) {
+        if (window.confirm("Are you sure you want to delete this page? WARNING: All notes on this page will be deleted and cannot be recovered.")) {
+            this.noteService.deleteNotePage(page.pageID);
+        }
     }
 
     // Reloads the notes from the server
