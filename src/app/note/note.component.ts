@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Input, Output, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, EventEmitter, OnInit, Input, Output, ViewChild, ElementRef } from '@angular/core';
 
 import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
@@ -12,8 +12,6 @@ import { Settings } from '../classes/Settings';
 Component for displaying a single note
 
 */
-
-
 
 @Component({
   selector: 'app-note',
@@ -183,11 +181,6 @@ export class NoteComponent implements OnInit {
         // focus title and make editable
         e.target.focus();
         e.target.readOnly = false;
-        // Select title
-        if (this.note.title) {
-            e.target.selectionStart = 0;
-            e.target.selectionEnd = this.note.title.length;
-        }
     }
 
     /**
@@ -278,8 +271,9 @@ export class NoteComponent implements OnInit {
 
     calculateTextSize(isTitle: boolean) {
         var size: number;
+        var test = false
         if (this.note.fontSize) {
-            size = this.note.fontSize;
+            size = Number(this.note.fontSize);
         }
         else {
             size = 12;
@@ -287,10 +281,10 @@ export class NoteComponent implements OnInit {
         
         if (isTitle) size += 4;
         switch (Settings.textSize) {
+            default:
             case "Small":
                 size += 0;
                 break;
-            default:
             case "Medium":
                 size += 4;
                 break;

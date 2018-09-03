@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
+import { NotePage } from '../classes/notePage';
 import { UndoHandler } from '../classes/undoHandler';
 import { Config } from '../exports/config';
 
@@ -55,7 +56,7 @@ export class NotePageComponent implements OnInit {
 
     undoHandler: UndoHandler;// = new UndoHandler();
 
-    constructor(private noteService: NoteService) {
+    constructor(public noteService: NoteService) {
         if (Config.isFirefox) {
             this.undoHandler = new UndoHandler();
         }
@@ -145,6 +146,7 @@ export class NotePageComponent implements OnInit {
         if (this.drag.note) {
             this.drag.note.x = e.clientX - this.drag.offsetX;
             this.drag.note.y = e.clientY - this.drag.offsetY;
+            if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
             this.drag.note.saved = false;
 
             this.noteService.changesSaved = false;
@@ -273,33 +275,44 @@ export class NotePageComponent implements OnInit {
     }
 
     tabClick(page) {
-        this.noteService.selectNotePage(page);
+        this.noteService.selectNotePage(page.pageID);
     }
 
-    tabInputClick(e) {
-        if (!e.target.readOnly) {
+    tabMouseDown(e) {
+        if (!e.target.highlight) {
             e.preventDefault();
         }
     }
 
-    filterKeys(e) {
+    filterKeys(e, page) {
         if (e.key == 'Enter') {
             e.preventDefault();
+            this.blurTab(e.target, page);
         }
+        else if (e.key !== 'Delete' && e.key != 'Backspace') {
+            if (e.target.textContent.length >= 100) e.preventDefault();
+        }
+    }
+
+    filterInputs(e) {
+        e.target.textContent = e.target.textContent.replace(/\ng/, "");
     }
 
     editTab(target, length) {
-        //target = target.children[0];
+        if (!target) return;
         target.contentEditable = true;
-        target.readOnly = true;
+        target.highlight = true;
         target.focus();
         target.selectionStart = 0;
-        target.selectionEnd = length-1;
+        target.selectionEnd = length - 1;
     }
 
-    blurTab(e, page) {
-        e.target.contentEditable = false;
-        page.name = e.target.textContent;
+    blurTab(target, page) {
+        target.contentEditable = false;
+        target.highlight = false;
+        //target.setAttribute("disabled");
+        page.name = target.textContent;
+        this.noteService.updateNotePage(page);
     }
 
     addTab() {
@@ -325,10 +338,6 @@ export class NotePageComponent implements OnInit {
 
     getUsername() {
         return this.noteService.username;
-    }
-
-    getNotes() {
-        return this.noteService.notes;
     }
 
     showAccountSettings() {

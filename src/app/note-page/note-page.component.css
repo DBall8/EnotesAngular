@@ -50,9 +50,10 @@
 .tabBar {
   background: gray;
   margin: 0;
+  padding:2px;
   border-bottom: 2px solid black;
-  vertical-align:baseline;
-  height: 20px;
+  box-sizing: border-box;
+  overflow-x:visible;
 }
 
 .tab {
@@ -66,6 +67,18 @@
   border: 2px solid black;
   border-bottom: none;
   height: 25px;
+  vertical-align: bottom;
+  overflow-x: visible;
+}
+
+.innerTab {
+  margin: 0;
+  padding: 0;
+  background: none;
+  display: inline;
+  width: 100%;
+  min-width: 500px;
+  height: 100%;
 }
 
 .unselectedTab {

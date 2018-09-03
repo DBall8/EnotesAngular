@@ -22,6 +22,7 @@ const httpHeaders: HttpHeaders = new HttpHeaders({
 export class NoteService {
     
     notes: Note[] = [];
+    visibleNotes: Note[] = [];
     notePages: NotePage[] = [];
 
     currentPageID: string = "";
@@ -31,9 +32,9 @@ export class NoteService {
     socket = null;
 
     dummyNotes = [
-        new Note("note-123", "Title1", "test", 100, 100, 200, 200, ""),
-        new Note("note-456", "", "test1", 400, 400, 300, 300, ""),
-        new Note("note-789", "RUN", "test2", 800, 300, 400, 400, "")
+        new Note("note-123", "p-1", "Title1", "test", 100, 100, 200, 200, ""),
+        new Note("note-456", "p-1", "", "test1", 400, 400, 300, 300, ""),
+        new Note("note-789", "p-1", "RUN", "test2", 800, 300, 400, 400, "")
     ];
 
     dummyPages = [
@@ -50,7 +51,7 @@ export class NoteService {
             this.notes = this.dummyNotes;
             this.notePages = this.dummyPages;
             if (this.notePages.length <= 0) this.addNotePage("Main Page");
-            this.selectNotePage(this.notePages[0]);
+            this.selectNotePage(this.notePages[0].pageID);
         }
         else {
             this.http.request("GET", "/api", { observe: 'response', headers: httpHeaders }).subscribe((res) => {
@@ -69,7 +70,10 @@ export class NoteService {
 
                 // On success, set up the note page
                 this.username = body.username;
+                this.currentPageID = this.username + "-default";
+                this.loadNotePages(body.notePages)
                 this.loadNotes(body.notes);
+                this.selectNotePage(this.notePages[0].pageID);
                 this.setupSocket();
             }, (error) => console.error(error.error));
         }
@@ -98,8 +102,9 @@ export class NoteService {
                 }
 
                 // On success, set up the note page
-                this.username = body.username;
+                this.loadNotePages(body.notePages);
                 this.loadNotes(body.notes);
+                this.selectNotePage(this.currentPageID);
             }, (error) => console.error(error.error));
         }
     }
@@ -108,15 +113,6 @@ export class NoteService {
     @param ns An array of objects representing notes
     */
     loadNotes(ns: any[]) {
-
-        this.notes = [];
-
-        // If the response did not contain any notes, simply add a note and return
-        if (ns.length < 1) {
-            this.addNote(200, 200);
-            return;
-        }
-
         // make sure there arent already notes loaded
         this.notes = [];
 
@@ -135,7 +131,7 @@ export class NoteService {
             }
 
             // Create the Note instance
-            var note: Note = new Note(anote.tag, anote.title, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
+            var note: Note = new Note(anote.tag, anote.pageid, anote.title, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
             if (note.fontSize) { note.fontSize = anote.fontsize; }
             if (note.font) { note.font = anote.font; }
             note.zindex = anote.zindex;
@@ -149,19 +145,21 @@ export class NoteService {
     /* Adds a new note and sends it to the database to be added */
     addNote(x: number, y: number) {
         // Create a new note isntance that is empty
-        var note: Note = new Note('note-' + new Date().getTime(), "", "", x, y, 200, 200, ColorChart.yellow);
+        var note: Note = new Note('note-' + new Date().getTime(), this.currentPageID, "", "", x, y, 200, 200, ColorChart.yellow);
         if(Settings.dFont) note.font = Settings.dFont;
         if (Settings.dFontSize) note.fontSize = Settings.dFontSize;
         if (Settings.dColor) note.colors = ColorChart[Settings.dColor.toLowerCase()];
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);
+        if (this.currentPageID == note.pageID) this.visibleNotes.push(note);
 
         if (!Config.DEBUG) {
             // send a request to add the note to the database
             this.http.request("POST", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
+                    pageID: note.pageID,
                     title: note.title,
                     content: note.content,
                     x: note.x,
@@ -246,7 +244,7 @@ export class NoteService {
             this.http.request("DELETE", "/api", {
                 body: JSON.stringify({
                     tag: noteID,
-                    socketID: this.socketID
+                    socketid: this.socketID
                 }),
                 observe: 'response',
                 headers: httpHeaders
@@ -277,28 +275,161 @@ export class NoteService {
                 break;
             }
         }
+        for (var i = 0; i < this.visibleNotes.length; i++) {
+            if (this.visibleNotes[i].id === noteID) {
+                this.visibleNotes.splice(i, 1);
+                break;
+            }
+        }
+
+        if (this.visibleNotes.length < 1) {
+            this.addNote(200, 200);
+        }
+    }
+
+    loadNotePages(pages: any[]) {
+        this.notePages = [];
+
+        // If the response did not contain any notes, simply add a note and return
+        if (pages.length < 1) {
+            this.addNotePage("Main Page");
+            return;
+        }
+
+        // map each object to a new note
+        pages.map((apage) => {
+            
+            // Create the NotePage instance
+            var page: NotePage = new NotePage(apage.pageid, apage.name);
+            // add the note page to the array
+            this.notePages.push(page);
+
+            return;
+        });
     }
 
     addNotePage(name) {
         var newPage: NotePage = new NotePage("page-" + new Date().getTime(), name);
         this.notePages.push(newPage);
+
+        if (!Config.DEBUG) {
+            // send a request to add the note to the database
+            this.http.request("POST", "/notepage", {
+                observe: 'response', body: JSON.stringify({
+                    pageID: newPage.pageID,
+                    name: newPage.name,
+                    socketid: this.socketID
+                }),
+                headers: httpHeaders
+            }
+            ).subscribe((res) => {
+                // display an error if the request failed
+                if (res.status != 200) {
+                    window.alert(res.status + " Error.");
+                    return;
+                }
+                var body: any = res.body;
+                // redirect to the login page if the session expired of the addition failed
+                if (body.sessionExpired || !body.successful) {
+                    this.redirect();
+                    return;
+                }
+            });
+        }
     }
 
     deleteNotePage(pageID) {
+        this.removePage(pageID)
+        if (this.notePages.length <= 0) this.addNotePage("Main Page");
+        this.selectNotePage(this.notePages[0].pageID);
+
+        if (!Config.DEBUG) {
+            // Send a delete request to the server
+            this.http.request("DELETE", "/notepage", {
+                body: JSON.stringify({
+                    pageID: pageID,
+                    socketid: this.socketID
+                }),
+                observe: 'response',
+                headers: httpHeaders
+            }
+            ).subscribe((res) => {
+                // display an error if the http request failed
+                if (res.status != 200) {
+                    window.alert(res.status + " Error.");
+                    return;
+                }
+                var body: any = res.body;
+                // redirect to the login page if the session expired of the update failed
+                if (body.sessionExpired || !body.successful) {
+                    this.redirect();
+                    return;
+                }
+            });
+        }
+    }
+
+    removePage(pageID: string) {
         for (var i = 0; i < this.notePages.length; i++) {
             if (this.notePages[i].pageID === pageID) {
                 this.notePages.splice(i, 1);
                 break;
             }
         }
-        if (this.notePages.length <= 0) this.addNotePage("Main Page");
-        this.selectNotePage(this.notePages[0]);
     }
 
-    selectNotePage(page: NotePage) {
-        this.notePages.map((page) => page.active = false);
-        this.currentPageID = page.pageID;
-        page.active = true;
+    updateNotePage(page) {
+        if (!Config.DEBUG) {
+            // send an update request
+            this.http.request("PUT", "/notepage", {
+                observe: 'response', body: JSON.stringify({
+                    pageID: page.pageID,
+                    name: page.name,
+                    socketid: this.socketID
+                }),
+                headers: httpHeaders
+            }
+            ).subscribe((res) => {
+                // display an error if the http request failed
+                if (res.status != 200) {
+                    window.alert(res.status + " Error.");
+                    return;
+                }
+                var body: any = res.body;
+                // redirect to the login page if the session expired of the update failed
+                if (body.sessionExpired || !body.successful) {
+                    this.redirect();
+                    return;
+                }
+            });
+        }
+    }
+
+    selectNotePage(pageID: string) {
+        this.notePages.map((page) => {
+            if (page.pageID === pageID) {
+                page.active = true
+            }
+            else {
+                page.active = false
+            }
+            
+        });
+        this.currentPageID = pageID;
+
+        this.visibleNotes = [];
+        this.notes.map((note) => {
+            if (note.pageID === this.currentPageID) {
+                this.visibleNotes.push(note);
+            }
+        })
+
+        // If the response did not contain any notes, simply add a note and return
+        if (this.visibleNotes.length < 1) {
+            this.addNote(200, 200);
+            return;
+        }
+
     }
 
     /* Sets up a socket that notifies this client any time a change is made elsewhere */
@@ -345,17 +476,43 @@ export class NoteService {
         this.socket.on("create", (body) => {
             var input = JSON.parse(body);
 
-            var n = new Note(input.tag, input.title, input.content, input.x, input.y, input.width, input.height, input.colors);
+            var n = new Note(input.tag, input.pageID, input.title, input.content, input.x, input.y, input.width, input.height, input.colors);
             if (n.fontSize) { n.fontSize = input.fontSize; }
             if (n.font) { n.font = input.font; }
             n.zindex = input.zindex;
 
             this.notes.push(n);
+            if (this.currentPageID === n.pageID) this.visibleNotes.push(n);
         })
 
         // Whenever a delete event is received, delete the corresponding note
         this.socket.on("delete", (tag) => {
             this.removeNote(tag);
+        })
+
+        // Whenever a create page event is received, create a note page
+        this.socket.on("createpage", (body) => {
+            var input = JSON.parse(body);
+            var p = new NotePage(input.pageID, input.name);
+            this.notePages.push(p);
+        })
+
+        // Whenever an update page event is received, update the note page
+        this.socket.on("updatepage", (body) => {
+            var input = JSON.parse(body);
+
+            var page = this.retrievePage(input.tag);
+
+            if (!page) {
+                return;
+            }
+
+            page.name = input.name;
+        })
+
+        // Whenever a delete event is received, delete the corresponding note
+        this.socket.on("deletepage", (pageID) => {
+            this.removePage(pageID);
         })
     }
 
@@ -363,11 +520,20 @@ export class NoteService {
     @param noteID The id of the note to find
     @return a Note class instance with the given ID
     */
-    retrieveNote(noteID: String) {
+    retrieveNote(noteID: string) {
         for (var i:number = 0; i < this.notes.length; i++) {
             if (this.notes[i].id == noteID) {
-
                 return this.notes[i];
+            }
+        }
+        return null;
+
+    }
+
+    retrievePage(pageID: string) {
+        for (var i: number = 0; i < this.notePages.length; i++) {
+            if (this.notePages[i].pageID === pageID) {
+                return this.notePages[i];
             }
         }
         return null;

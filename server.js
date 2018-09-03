@@ -22,7 +22,8 @@ else {
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
     db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dFont VARCHAR(50), dFontSize INTEGER, dColor VARCHAR(50))');
-    db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512))');
+    db.query('CREATE TABLE IF NOT EXISTS notePages (pageID VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100))');
+    db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageID VARCHAR(100) REFERENCES notePages(pageID))');
     console.log("Successfully connected to database.");
 }, (err) =>{
     console.error("Failed to connect to database.")
@@ -90,6 +91,18 @@ app.put('/api', requireLogin, (req, res) => {
 
 app.delete('/api', requireLogin, (req, res) => {
     deleteNote(req, res);
+})
+
+app.post('/notepage', requireLogin, (req, res) => {
+    addNotePage(req, res);
+})
+
+app.put('/notepage', requireLogin, (req, res) => {
+    updateNotePage(req, res);
+})
+
+app.delete('/notepage', requireLogin, (req, res) => {
+    deleteNotePage(req, res);
 })
 
 app.post('/user', requireLogin, (req, res) => {
@@ -309,7 +322,7 @@ function updateUserSettings(req, res){
     var input = JSON.parse(req.body);
 
     var arr = [input.dFont, input.dFontSize, input.dColor, req.user];
-    db.query("UPDATE users SET dFont= $1, dFontSize=$2, dColor=$3 WHERE username=$4", arr).then(() => {
+    db.query("UPDATE users SET dFont=$1, dFontSize=$2, dColor=$3 WHERE username=$4", arr).then(() => {
         res.writeHead(200)
         var response = {
             successful: true,
@@ -378,9 +391,9 @@ function addNote(req, res) {
     var username = req.user;
 
     // add the note to the database
-    var values = [username, input.tag, input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors]
+    var values = [username, input.tag, input.pageID, input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors]
         
-    db.query('INSERT INTO notes (username, tag, title, content, x, y, width, height, fontSize, font, zindex, colors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', values).then(() =>{
+    db.query('INSERT INTO notes (username, tag, pageID, title, content, x, y, width, height, fontSize, font, zindex, colors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', values).then(() =>{
         // successful
         console.log(input.tag + " successfully added")
 
@@ -487,12 +500,17 @@ function getNotes(req, res) {
     var uri = url.parse(req.url)
     // read query sessionID
     var input = qs.parse(uri.query);
-    var result = [];
 
     var username = req.user;
+
+    var response = {
+        username: username,
+        successful: true,
+        sessionExpired: false
+    }
 	
     // collect all notes stored for the user in an array
-    db.query("SELECT tag, title, content, x, y, width, height, fontSize, font, zindex, colors FROM notes WHERE username=$1", [username], function(error, resp){
+    db.query("SELECT tag, title, content, x, y, width, height, fontSize, font, zindex, colors, pageID FROM notes WHERE username=$1", [username], function(error, resp){
 
         if (error) {
             console.log("Could not retrieve notes for user: " + error);
@@ -501,17 +519,146 @@ function getNotes(req, res) {
             return;
         }
 
-        // send the array
-        res.writeHead(200, {'Content-type': 'application/json'});
+        response.notes = resp.rows;
+
+        db.query('SELECT pageID, name FROM notePages WHERE username=$1', [username], (err, resp) => {
+            if (err) {
+                console.log("Could not retrieve note pages for user: " + err);
+                res.writeHead(500);
+                res.end();
+                return;
+            }
+
+            response.notePages = resp.rows;
+
+            // send the response
+            res.writeHead(200, { 'Content-type': 'application/json' });
+            res.end(JSON.stringify(response))
+        })
+
+        
+    })
+	
+}
+
+function addNotePage(req, res) {
+    var input = JSON.parse(req.body);
+
+    // get the user corresponding to the supplied sessionID
+    var username = req.user;
+
+    // add the note to the database
+    var values = [input.pageID, username, input.name]
+
+    db.query('INSERT INTO notePages (pageid, username, name) VALUES ($1, $2, $3)', values).then(() => {
+        // successful
+        console.log("Note page " + input.pageID + " successfully added")
+
+        // Sockets for new pagse
+        if (activeClients[req.user]) {
+            activeClients[req.user].map((socketid) => {
+                if (socketid != input.socketid) {
+                    // Create a copy of the message received except without socketid
+                    var emission = JSON.parse(JSON.stringify(input))
+                    delete emission['socketid'];
+                    io.sockets.sockets[socketid].emit("createpage", JSON.stringify(emission));
+                }
+            })
+        }
+        
+
+        res.writeHead(200);
         var response = {
-            username: req.user,
-            notes: resp.rows,
             successful: true,
             sessionExpired: false
         }
-        res.end(JSON.stringify(response))
+        res.end(JSON.stringify(response));
+    }, (err) => {
+        // rejected
+        console.error("Could not insert new note:")
+        console.error(err)
+        res.writeHead(500);
+        res.end();
+    });	
+}
+
+// delete a note from the database
+function deleteNotePage(req, res) {
+    var input = JSON.parse(req.body);
+
+    // get user stored with sessionID
+    var username = req.user;
+    // delete notes from database in the current note page
+    db.query("DELETE FROM notes WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
+        // delete note page
+        db.query("DELETE FROM notePages WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
+            console.log(input.pageID + " successfully deleted")
+
+            // notifty active connections that the note page has been deleted
+            if (activeClients[req.user]) {
+                activeClients[req.user].map((socketid) => {
+                    if (socketid != input.socketid) {
+                        // Create a copy of the message received except without socketid
+                        io.sockets.sockets[socketid].emit("deletepage", input.pageID);
+                    }
+                })
+            }
+
+            res.writeHead(200)
+            var response = {
+                successful: true,
+                sessionExpired: false
+            }
+            res.end(JSON.stringify(response));
+        }, (err) => {
+            console.error("ERROR Could not delete note page:\n" + err);
+            res.writeHead(500)
+            res.end();
+        })
+    }, (err) => {
+        console.error("ERROR Could not delete note page:\n" + err);
+        res.writeHead(500)
+        res.end();
     })
-	
+
+}
+
+
+// update a note in the database
+function updateNotePage(req, res) {
+    var input = JSON.parse(req.body);
+
+    // get the user stored with the sessionID
+    var username = req.user;
+
+    // update contents of the note
+    var arr = [input.name, username, input.pageID]
+    db.query("UPDATE notePages SET name=$1 WHERE username=$2 AND pageID=$3", arr).then(() => {
+
+        // notifty active connections that the note page has updated
+        if (activeClients[req.user]) {
+            activeClients[req.user].map((socketid) => {
+                if (socketid != input.socketid) {
+                    // Create a copy of the message received except without socketid
+                    var emission = JSON.parse(JSON.stringify(input))
+                    delete emission['socketid'];
+                    io.sockets.sockets[socketid].emit("updatepage", JSON.stringify(emission));
+                }
+            })
+        }
+        
+
+        res.writeHead(200)
+        var response = {
+            successful: true,
+            sessionExpired: false
+        }
+        res.end(JSON.stringify(response));
+    }, (err) => {
+        console.error("ERROR could not update note page" + input.pageID + ":\n" + err);
+        res.writeHead(500)
+        res.end()
+    });
 }
 
 

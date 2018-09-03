@@ -9,28 +9,25 @@
 </h1>
 <!-- Pages -->
 <div class="tabBar">
-  <div class="tab" *ngFor="let page of this.noteService.notePages"
-       [class]="page.active? 'tab selectedTab': 'tab unselectedTab'"
-        (dblclick)="editTab($event.target, page.name.length)"
-       (click)="tabClick(page)">
-    <p type="text"  class="tabInput" readonly 
-       contenteditable="false" maxlength="100"
-       (mousedown)="tabInputClick($event)"
-       (keydown)="filterKeys($event)"
-       (blur)="blurTab($event, page)">{{page.name}}
-    </p>
-    <input type="image" src="assets/xsmall.png" class="xbutton" contenteditable="false"
+  <div *ngFor="let page of noteService.notePages" [class]="page.active? 'tab selectedTab': 'tab unselectedTab'" maxlength="100"
+       (mousedown)="tabMouseDown($event)"
+       (dblclick)="editTab($event.target.children[0], page.name.length)">
+    <div contenteditable="false" maxlength="100" class="innerTab"
+       (click)="tabClick(page)"
+       (mousedown)="tabMouseDown($event)"
+       (dblclick)="editTab($event.target, page.name.length)"
+       (keydown)="filterKeys($event, page)"
+       (input)="filterInputs($event)"
+       (blur)="blurTab($event.target, page)">{{page.name}}</div><input type="image" src="assets/xsmall.png" class="xbutton" contenteditable="false"
            (click)="deleteTab(page)"/>
-    
   </div>
-  <div class="tab">
-    <input class="plusbutton" type="image" src="assets/smallplus.png"
-           (click)="addTab()" />
+  <div class="tab unselectedTab" (click)="addTab()"  style="cursor: pointer">
+    <input class="plusbutton" type="image" src="assets/smallplus.png" />
   </div>
 </div>
 
 <!-- Notes -->
-<div *ngFor="let note of getNotes()" (onmousemove)="mouseMove()">
+<div *ngFor="let note of noteService.visibleNotes" (onmousemove)="mouseMove()">
     <app-note [note]="note"
         [undoHandler]="undoHandler"
         (mousedown)="selectNote(note)"

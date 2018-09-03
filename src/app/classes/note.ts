@@ -1,5 +1,6 @@
-export class Note{
+﻿export class Note{
     id: string;
+    pageID: string;
     title: string;
     content: string;
     x: number;
@@ -13,12 +14,14 @@ export class Note{
     saved: boolean;
     colors;
 
-    constructor(id, title, content, x, y, width, height, colors) {
+    constructor(id, pageID, title, content, x, y, width, height, colors) {
         this.id = id;
+        this.pageID = pageID;
         this.title = title;
         this.content = content;
         this.x = x;
         this.y = y;
+        if (this.y < 10) this.y = 10;
         this.width = width;
         this.height = height;
         this.selected = false;
