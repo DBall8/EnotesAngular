@@ -22,7 +22,7 @@ else {
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
     db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dFont VARCHAR(50), dFontSize INTEGER, dColor VARCHAR(50))');
-    db.query('CREATE TABLE IF NOT EXISTS notePages (pageID VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100))');
+    db.query('CREATE TABLE IF NOT EXISTS notePages (pageID VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
     db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageID VARCHAR(100) REFERENCES notePages(pageID))');
     console.log("Successfully connected to database.");
 }, (err) =>{
@@ -495,7 +495,7 @@ function updateNote(req, res){
     });
 }
 
-// send all the notes stored for a user
+// send all the notes stored for a user, as well as all note pages
 function getNotes(req, res) {
     var uri = url.parse(req.url)
     // read query sessionID
@@ -521,7 +521,8 @@ function getNotes(req, res) {
 
         response.notes = resp.rows;
 
-        db.query('SELECT pageID, name FROM notePages WHERE username=$1', [username], (err, resp) => {
+        // Collect all note pages stored for the user and add them to the response
+        db.query('SELECT pageID, name, index FROM notePages WHERE username=$1', [username], (err, resp) => {
             if (err) {
                 console.log("Could not retrieve note pages for user: " + err);
                 res.writeHead(500);
@@ -541,16 +542,19 @@ function getNotes(req, res) {
 	
 }
 
+/*
+    Adds a note page to the database
+*/
 function addNotePage(req, res) {
     var input = JSON.parse(req.body);
 
     // get the user corresponding to the supplied sessionID
     var username = req.user;
 
-    // add the note to the database
-    var values = [input.pageID, username, input.name]
+    // add the note page to the database
+    var values = [input.pageID, username, input.name, input.index]
 
-    db.query('INSERT INTO notePages (pageid, username, name) VALUES ($1, $2, $3)', values).then(() => {
+    db.query('INSERT INTO notePages (pageid, username, name, index) VALUES ($1, $2, $3, $4)', values).then(() => {
         // successful
         console.log("Note page " + input.pageID + " successfully added")
 
@@ -575,20 +579,20 @@ function addNotePage(req, res) {
         res.end(JSON.stringify(response));
     }, (err) => {
         // rejected
-        console.error("Could not insert new note:")
+        console.error("Could not insert new note page:")
         console.error(err)
         res.writeHead(500);
         res.end();
     });	
 }
 
-// delete a note from the database
+// delete a note page from the database
 function deleteNotePage(req, res) {
     var input = JSON.parse(req.body);
 
     // get user stored with sessionID
     var username = req.user;
-    // delete notes from database in the current note page
+    // delete note pages from database in the current note page
     db.query("DELETE FROM notes WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
         // delete note page
         db.query("DELETE FROM notePages WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
@@ -624,16 +628,16 @@ function deleteNotePage(req, res) {
 }
 
 
-// update a note in the database
+// update a note page in the database
 function updateNotePage(req, res) {
     var input = JSON.parse(req.body);
 
     // get the user stored with the sessionID
     var username = req.user;
 
-    // update contents of the note
-    var arr = [input.name, username, input.pageID]
-    db.query("UPDATE notePages SET name=$1 WHERE username=$2 AND pageID=$3", arr).then(() => {
+    // update contents of the note page
+    var arr = [input.name, input.index, username, input.pageID]
+    db.query("UPDATE notePages SET name=$1, index=$2 WHERE username=$3 AND pageID=$4", arr).then(() => {
 
         // notifty active connections that the note page has updated
         if (activeClients[req.user]) {

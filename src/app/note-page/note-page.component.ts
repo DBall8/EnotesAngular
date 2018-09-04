@@ -119,6 +119,7 @@ export class NotePageComponent implements OnInit {
             this.drag.note.x = e.clientX - this.drag.offsetX;
             this.drag.note.y = e.clientY - this.drag.offsetY;
             if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
+            if (this.drag.note.x < 0) this.drag.note.x = 0;
             
         }
         // If a note resize is in progress, update the notes size
@@ -147,6 +148,7 @@ export class NotePageComponent implements OnInit {
             this.drag.note.x = e.clientX - this.drag.offsetX;
             this.drag.note.y = e.clientY - this.drag.offsetY;
             if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
+            if (this.drag.note.x < 0) this.drag.note.x = 0;
             this.drag.note.saved = false;
 
             this.noteService.changesSaved = false;
@@ -274,37 +276,91 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.visible = true;
     }
 
+    /*
+        Called when a page tab is clicked on. Switched to that page
+    */
     tabClick(page) {
         this.noteService.selectNotePage(page.pageID);
     }
 
+    /*
+        Called when a mouse is pressed on a page tab. Prevents the text from being highlighted if not editing the tab name
+    */
     tabMouseDown(e) {
         if (!e.target.highlight) {
             e.preventDefault();
         }
     }
 
+    /*
+        Filters the input into the tab name. Prevents newlines and text longer than 100 characters
+    */
     filterKeys(e, page) {
+        // override the enter key to simply stop editing the name
         if (e.key == 'Enter') {
             e.preventDefault();
             this.blurTab(e.target, page);
         }
-        else if (e.key !== 'Delete' && e.key != 'Backspace') {
-            if (e.target.textContent.length >= 100) e.preventDefault();
+        // Cap length at 100
+        else if (e.target.textContent.length >= 100 && e.key !== 'Delete' && e.key != 'Backspace') {
+            // If the name is max length and a non delete key was pressed, check if anything is highlighted
+            var range = window.getSelection().getRangeAt(0);
+            var cursorStart = range.startOffset;
+            var cursorEnd = range.endOffset;
+
+            // if nothing highlighted, prevent input
+            if (cursorEnd - cursorStart <= 0) {
+                e.preventDefault();
+            }
+
+            // if text somehow got longer than 100 characters, chop off the end
+            if (e.target.textContent.length > 100) {
+                e.target.textContent = e.target.textContent.substring(0, 101);
+            }
+        }
+
+        
+    }
+
+    /*
+        Called on input to page name. Double checks there are no invalid characters and removes any found
+    */
+    filterInputs(e) {
+        // if a new line somehow got in, remove it (moves cursor position so only do if needed)
+        if (e.target.textContent.indexOf(/\n/g) > -1) {
+            e.target.textContent = e.target.textContent.replace(/\n/g, "");
         }
     }
 
-    filterInputs(e) {
-        e.target.textContent = e.target.textContent.replace(/\ng/, "");
-    }
-
-    editTab(target, length) {
+    editTab(e, target, length) {
         if (!target) return;
         target.contentEditable = true;
         target.highlight = true;
         target.focus();
-        target.selectionStart = 0;
-        target.selectionEnd = length - 1;
+
+        // dont select anything if there is nothing to select
+        if (length <= 0) return;
+        
+        var range;
+
+        if (typeof document.createRange != "undefined") {
+            if (typeof e.rangeParent != "undefined") {
+                range = document.createRange();
+                range.setStart(e.rangeParent, 0);
+                range.setEnd(e.rangeParent, length);
+            }
+        }
+
+        if (range) {
+            if (typeof range.select != "undefined") {
+                range.select();
+            } else if (typeof window.getSelection != "undefined") {
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+        
     }
 
     blurTab(target, page) {
@@ -313,6 +369,7 @@ export class NotePageComponent implements OnInit {
         //target.setAttribute("disabled");
         page.name = target.textContent;
         this.noteService.updateNotePage(page);
+        target.textContent = page.name;
     }
 
     addTab() {

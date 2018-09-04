@@ -38,14 +38,17 @@ export class NoteService {
     ];
 
     dummyPages = [
-        new NotePage("p-1", "Main"),
-        new NotePage("p-2", "Work"),
-        new NotePage("p-3", "Food")
+        new NotePage("p-1", "Main", 0),
+        new NotePage("p-2", "Work", 2),
+        new NotePage("p-3", "Food", 1)
     ]
 
 
     constructor(private http: HttpClient, private router: Router) { }
 
+    /*
+        Retrieves all notes and note pags for the user
+    */
     getNotes() {
         if (Config.DEBUG) {
             this.notes = this.dummyNotes;
@@ -56,10 +59,13 @@ export class NoteService {
         else {
             this.http.request("GET", "/api", { observe: 'response', headers: httpHeaders }).subscribe((res) => {
 
+                // make sure the request succeeded
                 if (res.status != 200) {
                     window.alert(res.status + " Error.");
                     return;
                 }
+
+                // get the response body
                 var body:any = res.body;
 
                 // If unsuccessfull, redirect to login page
@@ -69,11 +75,14 @@ export class NoteService {
                 }
 
                 // On success, set up the note page
-                this.username = body.username;
-                this.currentPageID = this.username + "-default";
-                this.loadNotePages(body.notePages)
+                this.username = body.username; // save username
+                // load notes
                 this.loadNotes(body.notes);
+                // load pages
+                this.loadNotePages(body.notePages)
+                // select the first page
                 this.selectNotePage(this.notePages[0].pageID);
+                // start socket connection
                 this.setupSocket();
             }, (error) => console.error(error.error));
         }
@@ -101,10 +110,13 @@ export class NoteService {
                     return;
                 }
 
-                // On success, set up the note page
-                this.loadNotePages(body.notePages);
+                // On success, set up the note pages and notes
                 this.loadNotes(body.notes);
-                this.selectNotePage(this.currentPageID);
+                this.loadNotePages(body.notePages);
+                // force the page to go to the note page that was selected before
+                var pageID = this.currentPageID;
+                this.currentPageID = "";
+                this.selectNotePage(pageID);
             }, (error) => console.error(error.error));
         }
     }
@@ -115,6 +127,7 @@ export class NoteService {
     loadNotes(ns: any[]) {
         // make sure there arent already notes loaded
         this.notes = [];
+        this.visibleNotes = [];
 
         // map each object to a new note
         ns.map((anote) => {
@@ -287,7 +300,11 @@ export class NoteService {
         }
     }
 
+    /*
+        Loads note pages from the server's response
+    */
     loadNotePages(pages: any[]) {
+        // reset note page list
         this.notePages = [];
 
         // If the response did not contain any notes, simply add a note and return
@@ -298,18 +315,19 @@ export class NoteService {
 
         // map each object to a new note
         pages.map((apage) => {
-            
             // Create the NotePage instance
-            var page: NotePage = new NotePage(apage.pageid, apage.name);
+            var page: NotePage = new NotePage(apage.pageid, apage.name, apage.index);
             // add the note page to the array
-            this.notePages.push(page);
-
-            return;
+            this.notePages[page.index] = page;
         });
     }
 
+    /*
+        Add a new note page and notify the server about it
+    */
     addNotePage(name) {
-        var newPage: NotePage = new NotePage("page-" + new Date().getTime(), name);
+        // create new page
+        var newPage: NotePage = new NotePage("page-" + new Date().getTime(), name, this.notePages.length);
         this.notePages.push(newPage);
 
         if (!Config.DEBUG) {
@@ -318,6 +336,7 @@ export class NoteService {
                 observe: 'response', body: JSON.stringify({
                     pageID: newPage.pageID,
                     name: newPage.name,
+                    index: newPage.index,
                     socketid: this.socketID
                 }),
                 headers: httpHeaders
@@ -334,13 +353,21 @@ export class NoteService {
                     this.redirect();
                     return;
                 }
+
+                this.selectNotePage(newPage.pageID);
             });
         }
     }
 
+    /*
+        Delete a note page and tell the server to do so as well
+    */
     deleteNotePage(pageID) {
+        // remove page
         this.removePage(pageID)
+        // add a new page if all pages were deleted
         if (this.notePages.length <= 0) this.addNotePage("Main Page");
+        // select the first page
         this.selectNotePage(this.notePages[0].pageID);
 
         if (!Config.DEBUG) {
@@ -367,8 +394,15 @@ export class NoteService {
                 }
             });
         }
+
+        // update the indices of the note pages that were changed
+        this.reIndexPages();
     }
 
+    /*
+        Find the page with the given id and removes it
+        @param pageID the id of the page to remove
+    */
     removePage(pageID: string) {
         for (var i = 0; i < this.notePages.length; i++) {
             if (this.notePages[i].pageID === pageID) {
@@ -378,6 +412,9 @@ export class NoteService {
         }
     }
 
+    /*
+        Updates a server to match the state of the given page
+    */
     updateNotePage(page) {
         if (!Config.DEBUG) {
             // send an update request
@@ -385,6 +422,7 @@ export class NoteService {
                 observe: 'response', body: JSON.stringify({
                     pageID: page.pageID,
                     name: page.name,
+                    index: page.index,
                     socketid: this.socketID
                 }),
                 headers: httpHeaders
@@ -405,7 +443,14 @@ export class NoteService {
         }
     }
 
+    /*
+        Make a page the currently selected page
+    */
     selectNotePage(pageID: string) {
+        // do nothing if page is already selected
+        if (this.currentPageID === pageID) return;
+
+        // deselect all pages except the one with the given ID, and select the one with the given ID
         this.notePages.map((page) => {
             if (page.pageID === pageID) {
                 page.active = true
@@ -415,8 +460,11 @@ export class NoteService {
             }
             
         });
+
+        // set the given id as the new current page
         this.currentPageID = pageID;
 
+        // move only the notes on the current page into the visible notes array
         this.visibleNotes = [];
         this.notes.map((note) => {
             if (note.pageID === this.currentPageID) {
@@ -424,7 +472,7 @@ export class NoteService {
             }
         })
 
-        // If the response did not contain any notes, simply add a note and return
+        // If the note page does not contain any notes, add a new note to it
         if (this.visibleNotes.length < 1) {
             this.addNote(200, 200);
             return;
@@ -493,7 +541,7 @@ export class NoteService {
         // Whenever a create page event is received, create a note page
         this.socket.on("createpage", (body) => {
             var input = JSON.parse(body);
-            var p = new NotePage(input.pageID, input.name);
+            var p = new NotePage(input.pageID, input.name, input.index);
             this.notePages.push(p);
         })
 
@@ -501,18 +549,20 @@ export class NoteService {
         this.socket.on("updatepage", (body) => {
             var input = JSON.parse(body);
 
-            var page = this.retrievePage(input.tag);
+            var page = this.retrievePage(input.pageID);
 
             if (!page) {
                 return;
             }
 
             page.name = input.name;
+            page.index = input.index;
         })
 
         // Whenever a delete event is received, delete the corresponding note
         this.socket.on("deletepage", (pageID) => {
             this.removePage(pageID);
+            this.selectNotePage(this.notePages[0].pageID);
         })
     }
 
@@ -530,6 +580,11 @@ export class NoteService {
 
     }
 
+    /*
+        Searches the notePage list for the page with the given ID
+        @param pageID the id of the page to find
+        @return the page with the given ID, or null if no page has that ID
+    */
     retrievePage(pageID: string) {
         for (var i: number = 0; i < this.notePages.length; i++) {
             if (this.notePages[i].pageID === pageID) {
@@ -537,7 +592,20 @@ export class NoteService {
             }
         }
         return null;
+    }
 
+    /*
+        Reassigns pages indices bases on their position in the notePage array
+    */
+    reIndexPages() {
+        for (var i = 0; i < this.notePages.length; i++) {
+            // If any page's index does not match its position in the array, make it match its position
+            if (i != this.notePages[i].index) {
+                var page = this.notePages[i];
+                page.index = i;
+                this.updateNotePage(page);
+            }
+        }
     }
 
     // Directs the browser to the login page
