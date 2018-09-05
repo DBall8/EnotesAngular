@@ -467,8 +467,8 @@ function updateNote(req, res){
     var username = req.user;
 
     // update contents of the note
-    var arr = [input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors, username, input.tag]
-    db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontSize=$7, font=$8, zindex=$9, colors=$10 WHERE username=$11 AND tag=$12", arr).then(() => {
+    var arr = [input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors, input.pageID, username, input.tag]
+    db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontSize=$7, font=$8, zindex=$9, colors=$10, pageid=$11 WHERE username=$12 AND tag=$13", arr).then(() => {
 
         // notifty active connections that the note has updated
         if(activeClients[req.user]){

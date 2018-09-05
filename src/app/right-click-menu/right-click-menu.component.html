@@ -5,6 +5,7 @@
 		<h3 class="menuitem" (click)="selectOption($event, 'colors')">Color</h3>
         <h3 class="menuitem" (click)="selectOption($event, 'fontSize')">Font size</h3>
         <h3 class="menuitem" (click)="selectOption($event, 'font')">Font</h3>
+        <h3 class="menuitem" (click)="selectOption($event, 'move')">Move to Page..</h3>
         <h3 class="menuitem" #copy>Copy</h3>
         <h3 class="menuitem" #paste>Paste</h3>
 	</div>
@@ -28,6 +29,13 @@
 	<div class="subMenu" [style.display]="display.subMenu == 'font'? 'block': 'none'">
             <div *ngFor="let font of fonts" class="menuitem" [style.background-color]="display.note && display.note.font == font? '#9b9b9b':''">
 				<div class="fontOption" (click)="selectFont(font)">{{font}}</div>
+			</div>
+    </div>
+
+    <!-- Move submenu -->
+	<div class="subMenu" [style.display]="display.subMenu == 'move'? 'block': 'none'">
+            <div *ngFor="let page of noteService.notePages" class="menuitem" [style.background-color]="display.note && display.note.pageID === page.pageID? '#9b9b9b':''">
+				<div class="fontOption" (click)="moveNoteToPage(page.pageID)">{{page.name}}</div>
 			</div>
     </div>
 </div>

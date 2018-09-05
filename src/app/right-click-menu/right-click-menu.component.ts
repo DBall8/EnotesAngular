@@ -25,7 +25,7 @@ export class RightClickMenuComponent implements OnInit {
     fontSizes = [10, 12, 14, 18, 24, 32];
     fonts = ['Arial', 'Palatino Linotype', 'Courier New'];
 
-    constructor(private noteService: NoteService) { 
+    constructor(public noteService: NoteService) { 
     }
 
     ngOnInit() {
@@ -70,6 +70,11 @@ export class RightClickMenuComponent implements OnInit {
         this.display.note.font = font;
         this.display.note.saved = false;
         this.noteService.changesSaved = false;
+    }
+
+    moveNoteToPage(pageID: string) {
+        if (!this.display.note) return;
+        this.noteService.moveNoteToPage(this.display.note, pageID);
     }
 
     getColors() {

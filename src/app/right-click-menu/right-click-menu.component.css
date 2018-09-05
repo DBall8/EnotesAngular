@@ -4,13 +4,12 @@
 	background: none;
 	padding: 2px;
 	margin: 0;
-
 	cursor: default;
 }
 
 .optionsHolder{
 	float: left;
-	width: 130px;
+	width: 160px;
 	box-sizing: border-box;
 	background: white;
 	border: 2px solid black;
@@ -36,7 +35,8 @@
 }
 
 .fontOption {
-    padding: 3px;
+    padding: 5px;
+    font-size: 1.2em;
 }
 
 .colorOption{

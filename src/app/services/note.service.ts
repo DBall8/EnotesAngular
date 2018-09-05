@@ -214,6 +214,7 @@ export class NoteService {
             this.http.request("PUT", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
+                    pageID: note.pageID,
                     title: note.title,
                     content: note.content,
                     x: note.x,
@@ -508,6 +509,7 @@ export class NoteService {
                 return;
             }
 
+            note.pageID = input.pageID;
             note.title = input.title;
             note.content = input.content;
             note.x = input.x;
@@ -619,6 +621,24 @@ export class NoteService {
         this.notePages[pos2].index = pos2;
         this.updateNotePage(this.notePages[pos1]);
         this.updateNotePage(this.notePages[pos2]);
+    }
+
+    moveNoteToPage(note: Note, pageID: string) {
+        if (note.pageID === pageID) return;
+
+        note.pageID = pageID;
+        this.updateNote(note);
+
+        for (var i = 0; i < this.visibleNotes.length; i++) {
+            if (this.visibleNotes[i].id === note.id) {
+                this.visibleNotes.splice(i, 1);
+                break;
+            }
+        }
+
+        if (this.visibleNotes.length < 1) {
+            this.addNote(200, 200);
+        }
     }
 
     // Directs the browser to the login page
