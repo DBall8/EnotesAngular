@@ -1,0 +1,59 @@
+.tabBar {
+  background: gray;
+  margin: 0;
+  padding:2px;
+  border-bottom: 2px solid black;
+  box-sizing: border-box;
+  overflow-x:visible;
+}
+
+.tab {
+  padding: 5px 15px 5px 15px;
+  margin: 5px;
+  display: inline;
+  color: white;
+  background: #1c1c1c;
+  border-radius: 15px 15px 0 0;
+  font: 1.2em;
+  border: 2px solid black;
+  border-bottom: none;
+  height: 25px;
+  vertical-align: bottom;
+  overflow-x: visible;
+}
+
+.innerTab {
+  margin: 0;
+  padding: 0;
+  background: none;
+  display: inline;
+  width: 100%;
+  min-width: 500px;
+  height: 100%;
+}
+
+.unselectedTab {
+  background: #1c1c1c;
+}
+
+.selectedTab{
+  background: #333333;
+}
+
+.unselectedTab:hover{
+  background: lightgray;
+  cursor: default;
+}
+
+.tabInput{
+  display: inline;
+  white-space: nowrap;
+}
+.xbutton{
+  margin-left: 20px;
+}
+
+.plusbutton{
+  width: 10px;
+  height: 10px;
+}

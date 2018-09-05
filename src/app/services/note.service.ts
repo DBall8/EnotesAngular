@@ -20,7 +20,7 @@ const httpHeaders: HttpHeaders = new HttpHeaders({
   providedIn: 'root'
 })
 export class NoteService {
-    
+
     notes: Note[] = [];
     visibleNotes: Note[] = [];
     notePages: NotePage[] = [];
@@ -66,7 +66,7 @@ export class NoteService {
                 }
 
                 // get the response body
-                var body:any = res.body;
+                var body: any = res.body;
 
                 // If unsuccessfull, redirect to login page
                 if (body.sessionExpired || !body.successful) {
@@ -150,7 +150,7 @@ export class NoteService {
             note.zindex = anote.zindex;
             // add the note to the array
             this.notes.push(note);
-            
+
             return;
         });
     }
@@ -159,7 +159,7 @@ export class NoteService {
     addNote(x: number, y: number) {
         // Create a new note isntance that is empty
         var note: Note = new Note('note-' + new Date().getTime(), this.currentPageID, "", "", x, y, 200, 200, ColorChart.yellow);
-        if(Settings.dFont) note.font = Settings.dFont;
+        if (Settings.dFont) note.font = Settings.dFont;
         if (Settings.dFontSize) note.fontSize = Settings.dFontSize;
         if (Settings.dColor) note.colors = ColorChart[Settings.dColor.toLowerCase()];
         note.zindex = 9999;
@@ -187,19 +187,19 @@ export class NoteService {
                 }),
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body:any = res.body;
-                // redirect to the login page if the session expired of the addition failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
-            });
+                ).subscribe((res) => {
+                    // display an error if the request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the addition failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
+                });
         }
     }
 
@@ -228,19 +228,19 @@ export class NoteService {
                 }),
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the http request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body:any = res.body;
-                // redirect to the login page if the session expired of the update failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
-            });
+                ).subscribe((res) => {
+                    // display an error if the http request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the update failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
+                });
         }
 
     }
@@ -262,19 +262,19 @@ export class NoteService {
                 observe: 'response',
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the http request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body:any = res.body;
-                // redirect to the login page if the session expired of the update failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
-            });
+                ).subscribe((res) => {
+                    // display an error if the http request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the update failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
+                });
         }
     }
 
@@ -341,21 +341,21 @@ export class NoteService {
                 }),
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body: any = res.body;
-                // redirect to the login page if the session expired of the addition failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
+                ).subscribe((res) => {
+                    // display an error if the request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the addition failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
 
-                this.selectNotePage(newPage.pageID);
-            });
+                    this.selectNotePage(newPage.pageID);
+                });
         }
     }
 
@@ -380,19 +380,19 @@ export class NoteService {
                 observe: 'response',
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the http request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body: any = res.body;
-                // redirect to the login page if the session expired of the update failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
-            });
+                ).subscribe((res) => {
+                    // display an error if the http request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the update failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
+                });
         }
 
         // update the indices of the note pages that were changed
@@ -427,19 +427,19 @@ export class NoteService {
                 }),
                 headers: httpHeaders
             }
-            ).subscribe((res) => {
-                // display an error if the http request failed
-                if (res.status != 200) {
-                    window.alert(res.status + " Error.");
-                    return;
-                }
-                var body: any = res.body;
-                // redirect to the login page if the session expired of the update failed
-                if (body.sessionExpired || !body.successful) {
-                    this.redirect();
-                    return;
-                }
-            });
+                ).subscribe((res) => {
+                    // display an error if the http request failed
+                    if (res.status != 200) {
+                        window.alert(res.status + " Error.");
+                        return;
+                    }
+                    var body: any = res.body;
+                    // redirect to the login page if the session expired of the update failed
+                    if (body.sessionExpired || !body.successful) {
+                        this.redirect();
+                        return;
+                    }
+                });
         }
     }
 
@@ -458,7 +458,7 @@ export class NoteService {
             else {
                 page.active = false
             }
-            
+
         });
 
         // set the given id as the new current page
@@ -571,7 +571,7 @@ export class NoteService {
     @return a Note class instance with the given ID
     */
     retrieveNote(noteID: string) {
-        for (var i:number = 0; i < this.notes.length; i++) {
+        for (var i: number = 0; i < this.notes.length; i++) {
             if (this.notes[i].id == noteID) {
                 return this.notes[i];
             }
@@ -606,6 +606,19 @@ export class NoteService {
                 this.updateNotePage(page);
             }
         }
+    }
+
+    swapPagePositions(pos1, pos2) {
+        if (pos1 == pos2) return;
+
+        var temp = this.notePages[pos1];
+        this.notePages[pos1] = this.notePages[pos2];
+        this.notePages[pos2] = temp;
+
+        this.notePages[pos1].index = pos1;
+        this.notePages[pos2].index = pos2;
+        this.updateNotePage(this.notePages[pos1]);
+        this.updateNotePage(this.notePages[pos2]);
     }
 
     // Directs the browser to the login page

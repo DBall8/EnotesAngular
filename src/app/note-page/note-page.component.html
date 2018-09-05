@@ -1,5 +1,5 @@
 ﻿
-<h1 class="title"><span class="welcomeMessage">Welcome {{getUsername()}}!</span>
+<h1 class="title"><span class="welcomeMessage">Welcome {{noteService.username}}!</span>
     <div class="rightFloat optionsContainer">
         <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
         <input type="image" src="assets/gear.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
@@ -8,23 +8,7 @@
 
 </h1>
 <!-- Pages -->
-<div class="tabBar">
-  <div *ngFor="let page of noteService.notePages" [class]="page.active? 'tab selectedTab': 'tab unselectedTab'" maxlength="100"
-       (mousedown)="tabMouseDown($event)"
-      (click)="tabClick(page)"
-       (dblclick)="editTab($event, $event.target.children[0], page.name.length)">
-    <span contenteditable="false" maxlength="100" class="innerTab"
-       (mousedown)="tabMouseDown($event)"
-       (dblclick)="editTab($event, $event.target, page.name.length)"
-       (keydown)="filterKeys($event, page)"
-       (input)="filterInputs($event)"
-       (blur)="blurTab($event.target, page)">{{page.name}}</span><input type="image" src="assets/xsmall.png" class="xbutton" contenteditable="false"
-           (click)="deleteTab(page)"/>
-  </div>
-  <div class="tab unselectedTab" (click)="addTab()"  style="cursor: pointer">
-    <input class="plusbutton" type="image" src="assets/smallplus.png" />
-  </div>
-</div>
+<app-tab-bar></app-tab-bar>
 
 <!-- Notes -->
 <div *ngFor="let note of noteService.visibleNotes" (onmousemove)="mouseMove()">

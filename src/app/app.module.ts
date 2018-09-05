@@ -12,6 +12,7 @@ import { RightClickMenuComponent } from './right-click-menu/right-click-menu.com
 import { OptionsMenuComponent } from './options-menu/options-menu.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 import { AccountSettingsPageComponent } from './account-settings-page/account-settings-page.component';
+import { TabBarComponent } from './tab-bar/tab-bar.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { AccountSettingsPageComponent } from './account-settings-page/account-se
     RightClickMenuComponent,
     OptionsMenuComponent,
     ChangelogComponent,
-    AccountSettingsPageComponent
+    AccountSettingsPageComponent,
+    TabBarComponent
   ],
   imports: [
       BrowserModule,

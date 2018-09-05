@@ -1,0 +1,16 @@
+<div class="tabBar">
+  <div *ngFor="let page of noteService.notePages" [class]="page.active? 'tab selectedTab': 'tab unselectedTab'" maxlength="100"
+       (mousedown)="tabMouseDown($event, page)"
+        (click)="tabClick(page)"
+       (dblclick)="editTab($event, $event.target.children[0], page.name.length)">
+    <span contenteditable="false" maxlength="100" class="innerTab"
+       (dblclick)="editTab($event, $event.target, page.name.length)"
+       (keydown)="filterKeys($event, page)"
+       (input)="filterInputs($event)"
+       (blur)="blurTab($event.target, page)">{{page.name}}</span><input type="image" src="assets/xsmall.png" class="xbutton" contenteditable="false"
+           (click)="deleteTab(page)"/>
+  </div>
+  <div class="tab unselectedTab" (click)="addTab()"  style="cursor: pointer">
+    <input class="plusbutton" type="image" src="assets/smallplus.png" />
+  </div>
+</div>
