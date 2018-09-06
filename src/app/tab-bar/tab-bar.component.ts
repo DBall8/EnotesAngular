@@ -19,7 +19,6 @@ export class TabBarComponent implements OnInit {
     drag: DragObj = null;
     tabElements: any;
 
-
     constructor(public noteService: NoteService) { }
 
     ngOnInit() {

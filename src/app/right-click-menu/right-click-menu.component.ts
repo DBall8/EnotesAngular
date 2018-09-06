@@ -74,7 +74,7 @@ export class RightClickMenuComponent implements OnInit {
 
     moveNoteToPage(pageID: string) {
         if (!this.display.note) return;
-        this.noteService.moveNoteToPage(this.display.note, pageID);
+        this.noteService.moveNoteToPage(this.display.note, pageID, true);
     }
 
     getColors() {

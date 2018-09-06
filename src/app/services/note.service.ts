@@ -148,6 +148,8 @@ export class NoteService {
             if (note.fontSize) { note.fontSize = anote.fontsize; }
             if (note.font) { note.font = anote.font; }
             note.zindex = anote.zindex;
+
+            if (!note.pageID) note.pageID = this.notePages[0].pageID;
             // add the note to the array
             this.notes.push(note);
 
@@ -321,6 +323,10 @@ export class NoteService {
             // add the note page to the array
             this.notePages[page.index] = page;
         });
+
+        for (var i = 0; i < this.notePages.length; i++) {
+            if (!this.notePages[i]) this.reSortPages(pages);
+        }
     }
 
     /*
@@ -509,7 +515,6 @@ export class NoteService {
                 return;
             }
 
-            note.pageID = input.pageID;
             note.title = input.title;
             note.content = input.content;
             note.x = input.x;
@@ -520,6 +525,7 @@ export class NoteService {
             if (note.font) { note.font = input.font; }
             note.zindex = input.zindex;
             note.colors = input.colors;
+            if (note.pageID !== input.pageID) this.moveNoteToPage(note, input.pageID, false);
         })
 
         // Whenever a create event is received, create a note
@@ -596,13 +602,37 @@ export class NoteService {
         return null;
     }
 
+    reSortPages(pages) {
+        this.notePages = [];
+        pages.map((apage) => {
+            // Create the NotePage instance
+            var page: NotePage = new NotePage(apage.pageid, apage.name, apage.index);
+            // add the note page to the array
+            this.notePages.push(page);
+        });
+        var len = this.notePages.length;
+        // Sort note pages by index
+        for (var i = 0; i < len - 1; i++) {
+            for (var j = 0; j < len - i - 1; j++) {
+                if (this.notePages[j].index > this.notePages[j + 1].index) {
+                    // swap temp and arr[i]
+                    var temp = this.notePages[j];
+                    this.notePages[j] = this.notePages[j + 1];
+                    this.notePages[j + 1] = temp;
+                }
+            }
+        }
+
+        this.reIndexPages();
+    }
+
     /*
         Reassigns pages indices bases on their position in the notePage array
     */
     reIndexPages() {
         for (var i = 0; i < this.notePages.length; i++) {
             // If any page's index does not match its position in the array, make it match its position
-            if (i != this.notePages[i].index) {
+            if (this.notePages[i] && i != this.notePages[i].index) {
                 var page = this.notePages[i];
                 page.index = i;
                 this.updateNotePage(page);
@@ -623,18 +653,27 @@ export class NoteService {
         this.updateNotePage(this.notePages[pos2]);
     }
 
-    moveNoteToPage(note: Note, pageID: string) {
+    moveNoteToPage(note: Note, pageID: string, update: boolean) {
         if (note.pageID === pageID) return;
 
         note.pageID = pageID;
-        this.updateNote(note);
+        if(update) this.updateNote(note);
 
-        for (var i = 0; i < this.visibleNotes.length; i++) {
-            if (this.visibleNotes[i].id === note.id) {
-                this.visibleNotes.splice(i, 1);
-                break;
+        // If moved to the visible page, make the note visible
+        if (pageID == this.currentPageID) {
+            this.visibleNotes.push(note);
+        }
+        // If moved to any other page, make sure note is note visible
+        else {
+            for (var i = 0; i < this.visibleNotes.length; i++) {
+                if (this.visibleNotes[i].id === note.id) {
+                    this.visibleNotes.splice(i, 1);
+                    break;
+                }
             }
         }
+
+        
 
         if (this.visibleNotes.length < 1) {
             this.addNote(200, 200);
