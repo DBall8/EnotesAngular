@@ -3,10 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { NoteService } from '../services/note.service';
 import { NotePage } from '../classes/notePage';
 
+const DRAG_START_DIST = 20;
+
 interface DragObj{
     page: NotePage,
     tab: any,
-    center: number
+    center: number,
+    startX: number,
+    started: boolean
 }
 
 @Component({
@@ -27,10 +31,10 @@ export class TabBarComponent implements OnInit {
         });
 
         window.addEventListener("mousemove", (e) => {
-            if (this.drag) {
-                this.drag.tab.style.left = e.screenX - this.drag.center  + 'px';
+            if (this.drag && this.drag.started) {
+                this.drag.tab.style.left = e.screenX - this.drag.center + 'px';
                 // loop through all tabs, except the last (the add tab tab)
-                for (var i = 0; i < this.tabElements.length-1; i++) {
+                for (var i = 0; i < this.tabElements.length - 1; i++) {
                     if (this.drag.tab != this.tabElements[i]) {
                         var tabCenter = this.tabElements[i].offsetLeft + (this.tabElements[i].offsetWidth / 2);
                         // dragging left
@@ -45,10 +49,15 @@ export class TabBarComponent implements OnInit {
                             if (e.clientX > tabCenter && tabCenter > this.drag.center) {
                                 this.drag.center = this.tabElements[i].offsetLeft + this.tabElements[i].offsetWidth / 2;
                                 this.noteService.swapPagePositions(this.drag.page.index, i);
-                                
+
                             }
                         }
                     }
+                }
+            }
+            else if (this.drag) {
+                if (Math.abs(this.drag.startX - e.clientX) > DRAG_START_DIST) {
+                    this.drag.started = true;
                 }
             }
         });
@@ -69,7 +78,7 @@ export class TabBarComponent implements OnInit {
             e.preventDefault();
         }
 
-        this.startDrag(e.target, page);
+        this.startDrag(e, page);
     }
 
     /*
@@ -162,14 +171,17 @@ export class TabBarComponent implements OnInit {
         }
     }
 
-    startDrag(tab, page:NotePage) {
-        if (tab.className === "innerTab") {
-            tab = tab.parentElement;
+    startDrag(e, page: NotePage) {
+        var tab = e.target;
+        if (e.target.className === "innerTab") {
+            tab = e.target.parentElement;
         }
         this.drag = {
             page: page,
             tab: tab,
-            center: tab.offsetLeft + tab.offsetWidth/2
+            center: tab.offsetLeft + tab.offsetWidth / 2,
+            startX: e.clientX,
+            started: false
         }
         this.drag.tab.style.position = 'relative';
         //this.drag.tab.position = 'relative';

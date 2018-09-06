@@ -76,10 +76,10 @@ export class NoteService {
 
                 // On success, set up the note page
                 this.username = body.username; // save username
-                // load notes
-                this.loadNotes(body.notes);
                 // load pages
                 this.loadNotePages(body.notePages)
+                // load notes
+                this.loadNotes(body.notes);
                 // select the first page
                 this.selectNotePage(this.notePages[0].pageID);
                 // start socket connection
@@ -111,8 +111,9 @@ export class NoteService {
                 }
 
                 // On success, set up the note pages and notes
-                this.loadNotes(body.notes);
                 this.loadNotePages(body.notePages);
+                this.loadNotes(body.notes);
+                
                 // force the page to go to the note page that was selected before
                 var pageID = this.currentPageID;
                 this.currentPageID = "";
@@ -325,8 +326,13 @@ export class NoteService {
         });
 
         for (var i = 0; i < this.notePages.length; i++) {
-            if (!this.notePages[i]) this.reSortPages(pages);
+            if (!this.notePages[i]) {
+                this.reSortPages(pages);
+                break;
+            }
         }
+
+        if (this.notePages.length != pages.length) this.reSortPages(pages);
     }
 
     /*
@@ -603,6 +609,7 @@ export class NoteService {
     }
 
     reSortPages(pages) {
+        console.log("RESORT");
         this.notePages = [];
         pages.map((apage) => {
             // Create the NotePage instance
