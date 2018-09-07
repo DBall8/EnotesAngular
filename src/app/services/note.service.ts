@@ -146,8 +146,8 @@ export class NoteService {
 
             // Create the Note instance
             var note: Note = new Note(anote.tag, anote.pageid, anote.title, anote.content, anote.x, anote.y, anote.width, anote.height, colors);
-            if (note.fontSize) { note.fontSize = anote.fontsize; }
-            if (note.font) { note.font = anote.font; }
+            if (anote.fontsize) { note.fontSize = anote.fontsize; }
+            if (anote.font) { note.font = anote.font; }
             note.zindex = anote.zindex;
 
             if (!note.pageID) note.pageID = this.notePages[0].pageID;
@@ -175,7 +175,7 @@ export class NoteService {
             this.http.request("POST", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
-                    pageID: note.pageID,
+                    pageid: note.pageID,
                     title: note.title,
                     content: note.content,
                     x: note.x,
@@ -183,7 +183,7 @@ export class NoteService {
                     width: note.width,
                     height: note.height,
                     zindex: note.zindex,
-                    fontSize: note.fontSize,
+                    fontsize: note.fontSize,
                     font: note.font,
                     colors: note.colors,
                     socketid: this.socketID
@@ -217,14 +217,14 @@ export class NoteService {
             this.http.request("PUT", "/api", {
                 observe: 'response', body: JSON.stringify({
                     tag: note.id,
-                    pageID: note.pageID,
+                    pageid: note.pageID,
                     title: note.title,
                     content: note.content,
                     x: note.x,
                     y: note.y,
                     width: note.width,
                     height: note.height,
-                    fontSize: note.fontSize,
+                    fontsize: note.fontSize,
                     font: note.font,
                     zindex: note.zindex,
                     colors: note.colors,
@@ -347,7 +347,7 @@ export class NoteService {
             // send a request to add the note to the database
             this.http.request("POST", "/notepage", {
                 observe: 'response', body: JSON.stringify({
-                    pageID: newPage.pageID,
+                    pageid: newPage.pageID,
                     name: newPage.name,
                     index: newPage.index,
                     socketid: this.socketID
@@ -387,7 +387,7 @@ export class NoteService {
             // Send a delete request to the server
             this.http.request("DELETE", "/notepage", {
                 body: JSON.stringify({
-                    pageID: pageID,
+                    pageid: pageID,
                     socketid: this.socketID
                 }),
                 observe: 'response',
@@ -433,7 +433,7 @@ export class NoteService {
             // send an update request
             this.http.request("PUT", "/notepage", {
                 observe: 'response', body: JSON.stringify({
-                    pageID: page.pageID,
+                    pageid: page.pageID,
                     name: page.name,
                     index: page.index,
                     socketid: this.socketID
@@ -527,20 +527,20 @@ export class NoteService {
             note.y = input.y;
             note.width = input.width;
             note.height = input.height;
-            if (note.fontSize) { note.fontSize = input.fontSize; }
-            if (note.font) { note.font = input.font; }
+            if (input.fontSize) { note.fontSize = input.fontsize; }
+            if (input.font) { note.font = input.font; }
             note.zindex = input.zindex;
             note.colors = input.colors;
-            if (note.pageID !== input.pageID) this.moveNoteToPage(note, input.pageID, false);
+            if (note.pageID !== input.pageid) this.moveNoteToPage(note, input.pageid, false);
         })
 
         // Whenever a create event is received, create a note
         this.socket.on("create", (body) => {
             var input = JSON.parse(body);
 
-            var n = new Note(input.tag, input.pageID, input.title, input.content, input.x, input.y, input.width, input.height, input.colors);
-            if (n.fontSize) { n.fontSize = input.fontSize; }
-            if (n.font) { n.font = input.font; }
+            var n = new Note(input.tag, input.pageid, input.title, input.content, input.x, input.y, input.width, input.height, input.colors);
+            if (input.fontsize) { n.fontSize = input.fontsize; }
+            if (input.font) { n.font = input.font; }
             n.zindex = input.zindex;
 
             this.notes.push(n);
@@ -555,7 +555,7 @@ export class NoteService {
         // Whenever a create page event is received, create a note page
         this.socket.on("createpage", (body) => {
             var input = JSON.parse(body);
-            var p = new NotePage(input.pageID, input.name, input.index);
+            var p = new NotePage(input.pageid, input.name, input.index);
             this.notePages.push(p);
         })
 
@@ -563,7 +563,7 @@ export class NoteService {
         this.socket.on("updatepage", (body) => {
             var input = JSON.parse(body);
 
-            var page = this.retrievePage(input.pageID);
+            var page = this.retrievePage(input.pageid);
 
             if (!page) {
                 return;

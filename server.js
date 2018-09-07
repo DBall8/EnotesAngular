@@ -21,9 +21,9 @@ else {
 // open the database
 var db = new pg.Client(dbURL);
 db.connect().then(() => {
-    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dFont VARCHAR(50), dFontSize INTEGER, dColor VARCHAR(50))');
-    db.query('CREATE TABLE IF NOT EXISTS notePages (pageID VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
-    db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontSize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageID VARCHAR(100) REFERENCES notePages(pageID))');
+    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dfont VARCHAR(50), dfontsize INTEGER, dcolor VARCHAR(50))');
+db.query('CREATE TABLE IF NOT EXISTS notePages (pageid VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
+db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontsize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageid VARCHAR(100) REFERENCES notePages(pageid))');
     console.log("Successfully connected to database.");
 }, (err) =>{
     console.error("Failed to connect to database.")
@@ -230,9 +230,9 @@ function attemptLogin(username, password){
                         console.log("PASSWORDS MATCHED: " + username)
                         res({ 
                             successful: true,
-                            dFont: row.dfont,
-                            dFontSize: row.dfontsize,
-                            dColor: row.dcolor
+                            dfont: row.dfont,
+                            dfontsize: row.dfontsize,
+                            dcolor: row.dcolor
                         });
                         return;
                     }
@@ -321,8 +321,8 @@ function newUser(username, password, req, res){
 function updateUserSettings(req, res){
     var input = JSON.parse(req.body);
 
-    var arr = [input.dFont, input.dFontSize, input.dColor, req.user];
-    db.query("UPDATE users SET dFont=$1, dFontSize=$2, dColor=$3 WHERE username=$4", arr).then(() => {
+    var arr = [input.dfont, input.dfontsize, input.dcolor, req.user];
+    db.query("UPDATE users SET dfont=$1, dfontsize=$2, dcolor=$3 WHERE username=$4", arr).then(() => {
         res.writeHead(200)
         var response = {
             successful: true,
@@ -391,9 +391,9 @@ function addNote(req, res) {
     var username = req.user;
 
     // add the note to the database
-    var values = [username, input.tag, input.pageID, input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors]
+    var values = [username, input.tag, input.pageid, input.title, input.content, input.x, input.y, input.width, input.height, input.fontsize, input.font, input.zindex, input.colors]
         
-    db.query('INSERT INTO notes (username, tag, pageID, title, content, x, y, width, height, fontSize, font, zindex, colors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', values).then(() =>{
+    db.query('INSERT INTO notes (username, tag, pageid, title, content, x, y, width, height, fontsize, font, zindex, colors) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', values).then(() =>{
         // successful
         console.log(input.tag + " successfully added")
 
@@ -467,8 +467,8 @@ function updateNote(req, res){
     var username = req.user;
 
     // update contents of the note
-    var arr = [input.title, input.content, input.x, input.y, input.width, input.height, input.fontSize, input.font, input.zindex, input.colors, input.pageID, username, input.tag]
-    db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontSize=$7, font=$8, zindex=$9, colors=$10, pageid=$11 WHERE username=$12 AND tag=$13", arr).then(() => {
+    var arr = [input.title, input.content, input.x, input.y, input.width, input.height, input.fontsize, input.font, input.zindex, input.colors, input.pageid, username, input.tag]
+    db.query("UPDATE notes SET title= $1, content=$2, x=$3, y=$4, width=$5, height=$6, fontsize=$7, font=$8, zindex=$9, colors=$10, pageid=$11 WHERE username=$12 AND tag=$13", arr).then(() => {
 
         // notifty active connections that the note has updated
         if(activeClients[req.user]){
@@ -510,7 +510,7 @@ function getNotes(req, res) {
     }
 	
     // collect all notes stored for the user in an array
-    db.query("SELECT tag, title, content, x, y, width, height, fontSize, font, zindex, colors, pageID FROM notes WHERE username=$1", [username], function(error, resp){
+    db.query("SELECT tag, title, content, x, y, width, height, fontsize, font, zindex, colors, pageid FROM notes WHERE username=$1", [username], function(error, resp){
 
         if (error) {
             console.log("Could not retrieve notes for user: " + error);
@@ -522,7 +522,7 @@ function getNotes(req, res) {
         response.notes = resp.rows;
 
         // Collect all note pages stored for the user and add them to the response
-        db.query('SELECT pageID, name, index FROM notePages WHERE username=$1', [username], (err, resp) => {
+        db.query('SELECT pageid, name, index FROM notePages WHERE username=$1', [username], (err, resp) => {
             if (err) {
                 console.log("Could not retrieve note pages for user: " + err);
                 res.writeHead(500);
@@ -552,11 +552,11 @@ function addNotePage(req, res) {
     var username = req.user;
 
     // add the note page to the database
-    var values = [input.pageID, username, input.name, input.index]
+    var values = [input.pageid, username, input.name, input.index]
 
     db.query('INSERT INTO notePages (pageid, username, name, index) VALUES ($1, $2, $3, $4)', values).then(() => {
         // successful
-        console.log("Note page " + input.pageID + " successfully added")
+        console.log("Note page " + input.pageid + " successfully added")
 
         // Sockets for new pagse
         if (activeClients[req.user]) {
@@ -593,17 +593,17 @@ function deleteNotePage(req, res) {
     // get user stored with sessionID
     var username = req.user;
     // delete note pages from database in the current note page
-    db.query("DELETE FROM notes WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
+    db.query("DELETE FROM notes WHERE username=$1 AND pageid=$2", [username, input.pageid]).then(() => {
         // delete note page
-        db.query("DELETE FROM notePages WHERE username=$1 AND pageid=$2", [username, input.pageID]).then(() => {
-            console.log(input.pageID + " successfully deleted")
+        db.query("DELETE FROM notePages WHERE username=$1 AND pageid=$2", [username, input.pageid]).then(() => {
+            console.log(input.pageid + " successfully deleted")
 
             // notifty active connections that the note page has been deleted
             if (activeClients[req.user]) {
                 activeClients[req.user].map((socketid) => {
                     if (socketid != input.socketid) {
                         // Create a copy of the message received except without socketid
-                        io.sockets.sockets[socketid].emit("deletepage", input.pageID);
+                        io.sockets.sockets[socketid].emit("deletepage", input.pageid);
                     }
                 })
             }
@@ -636,8 +636,8 @@ function updateNotePage(req, res) {
     var username = req.user;
 
     // update contents of the note page
-    var arr = [input.name, input.index, username, input.pageID]
-    db.query("UPDATE notePages SET name=$1, index=$2 WHERE username=$3 AND pageID=$4", arr).then(() => {
+    var arr = [input.name, input.index, username, input.pageid]
+    db.query("UPDATE notePages SET name=$1, index=$2 WHERE username=$3 AND pageid=$4", arr).then(() => {
 
         // notifty active connections that the note page has updated
         if (activeClients[req.user]) {
@@ -659,7 +659,7 @@ function updateNotePage(req, res) {
         }
         res.end(JSON.stringify(response));
     }, (err) => {
-        console.error("ERROR could not update note page" + input.pageID + ":\n" + err);
+        console.error("ERROR could not update note page" + input.pageid + ":\n" + err);
         res.writeHead(500)
         res.end()
     });

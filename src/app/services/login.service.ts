@@ -50,9 +50,9 @@ export class LoginService {
     updateUserSettings() {
         return this.http.request("POST", "/user", {
             observe: 'response', body: JSON.stringify({
-                dFont: Settings.dFont,
-                dFontSize: Settings.dFontSize,
-                dColor: Settings.dColor
+                dfont: Settings.dFont,
+                dfontsize: Settings.dFontSize,
+                dcolor: Settings.dColor
             }), headers: httpHeaders
         });
     }
