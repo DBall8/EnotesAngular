@@ -1,5 +1,6 @@
 ﻿
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { NoteService } from '../services/note.service';
 import { Note } from '../classes/note';
@@ -56,7 +57,7 @@ export class NotePageComponent implements OnInit {
 
     undoHandler: UndoHandler;// = new UndoHandler();
 
-    constructor(public noteService: NoteService) {
+    constructor(public noteService: NoteService, private router: Router) {
         if (Config.isFirefox) {
             this.undoHandler = new UndoHandler();
         }
@@ -274,6 +275,10 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.subMenu = '';
         // display the rcm
         this.rcmDisplay.visible = true;
+    }
+
+    goToHelp() {
+        this.router.navigate(['help']);
     }
 
     // Reloads the notes from the server

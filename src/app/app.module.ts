@@ -13,6 +13,7 @@ import { OptionsMenuComponent } from './options-menu/options-menu.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 import { AccountSettingsPageComponent } from './account-settings-page/account-settings-page.component';
 import { TabBarComponent } from './tab-bar/tab-bar.component';
+import { HelpPageComponent } from './help-page/help-page.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { TabBarComponent } from './tab-bar/tab-bar.component';
     OptionsMenuComponent,
     ChangelogComponent,
     AccountSettingsPageComponent,
-    TabBarComponent
+    TabBarComponent,
+    HelpPageComponent
   ],
   imports: [
       BrowserModule,
