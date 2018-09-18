@@ -2,7 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { LoginService } from '../services/login.service';
-import { Settings } from '../classes/Settings';
+import { SettingsService } from '../services/settings.service';
 
 /* Login
 
@@ -23,10 +23,10 @@ export class LoginComponent implements OnInit {
     @ViewChild('ConfirmPassword') confirmPasswordInput: ElementRef; // confirm password field (for new users)
     @ViewChild('stayLogged') stayLoggedCheckbox: ElementRef;
 
-    errorText: String = ""; // error message
+    errorText: string = ""; // error message
     isLogin: boolean = true; // true if the user is logging in to an existing account, false if user is creating an account
      
-    constructor(private loginService: LoginService, private router: Router) { }
+    constructor(private loginService: LoginService, private router: Router, private settings: SettingsService) { }
 
   ngOnInit() {
   }
@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
     @param password The given password input
     @param confirmPassword The confirm password field input
     */
-    login(username: string, password: string, confirmPassword: string) {
+    private login(username: string, password: string, confirmPassword: string) {
 
         // Make sure neither field is blank
         if (!username) {
@@ -62,11 +62,11 @@ export class LoginComponent implements OnInit {
                 // on success, navigate to notes page
                 if (res.body.successful) {
 
-                    Settings.restoreDefaults(false);
-                    if (res.body.dFont) Settings.dFont = res.body.dFont;
-                    if (res.body.dFontSize) Settings.dFontSize = res.body.dFontSize;
-                    if (res.body.dColor) Settings.dColor = res.body.dColor;
-                    Settings.save();
+                    this.settings.restoreDefaults(false);
+                    if (res.body.dFont) this.settings.dFont = res.body.dFont;
+                    if (res.body.dFontSize) this.settings.dFontSize = res.body.dFontSize;
+                    if (res.body.dColor) this.settings.dColor = res.body.dColor;
+                    this.settings.save();
 
                     this.router.navigate(['/']);
                 }
@@ -110,7 +110,7 @@ export class LoginComponent implements OnInit {
     /* Looks at key presses made while on the input field, and submits the form if the enter button is pressed
     @param key The key being pressed
     */
-    submit(key) {
+    private submit(key) {
         // As the user types, remove the error message
         if (this.errorText) {
             this.errorText = '';
@@ -123,7 +123,7 @@ export class LoginComponent implements OnInit {
     }
 
     /* Clears the fields of the form */
-    clearFields() {
+    private clearFields() {
         this.usernameInput.nativeElement.value = '';
         this.passwordInput.nativeElement.value = '';
         this.confirmPasswordInput.nativeElement.value = '';

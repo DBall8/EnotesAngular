@@ -1,4 +1,4 @@
-import { ColorChart } from '../exports/ColorChart';
+import { Injectable } from '@angular/core';
 
 const COOKIE_DAYS = 60;
 const DEFAULT_TEXTSIZE = "Medium";
@@ -6,13 +6,19 @@ const DEFAULT_DCOLOR = "Yellow";
 const DEFAULT_DFONT = "Arial";
 const DEFAULT_DFONTSIZE = 12;
 
-export class Settings {
-    static textSize: string = DEFAULT_TEXTSIZE;
-    static dColor: string = DEFAULT_DCOLOR;
-    static dFont: string = DEFAULT_DFONT;
-    static dFontSize: number = DEFAULT_DFONTSIZE;
+@Injectable({
+  providedIn: 'root'
+})
+export class SettingsService {
 
-    public static init() {
+    textSize: string = DEFAULT_TEXTSIZE;
+    dColor: string = DEFAULT_DCOLOR;
+    dFont: string = DEFAULT_DFONT;
+    dFontSize: number = DEFAULT_DFONTSIZE;
+
+    constructor() { }
+
+    public init() {
         var cookies: string[] = document.cookie.split(";");
         var cookieObj: any = {};
         cookies.map((cookie: string) => {
@@ -28,27 +34,27 @@ export class Settings {
         this.save();
     }
 
-    public static save() {
+    public save() {
         this.addCookie("textSize", this.textSize);
         this.addCookie("dFont", this.dFont);
         this.addCookie("dFontSize", String(this.dFontSize));
         this.addCookie("dColor", this.dColor);
     }
 
-    public static restoreDefaults(full: boolean){
-        if(full) this.textSize = DEFAULT_TEXTSIZE;
+    public restoreDefaults(full: boolean) {
+        if (full) this.textSize = DEFAULT_TEXTSIZE;
         this.dColor = DEFAULT_DCOLOR;
         this.dFont = DEFAULT_DFONT;
         this.dFontSize = DEFAULT_DFONTSIZE;
     }
 
-    private static addCookie(name: string, val: string) {
+    private addCookie(name: string, val: string) {
         var date = new Date();
-        date.setTime(date.getTime() + COOKIE_DAYS * 24 * 60 *  60 * 1000);
+        date.setTime(date.getTime() + COOKIE_DAYS * 24 * 60 * 60 * 1000);
         document.cookie = name + "=" + val + "; expires=" + date.toUTCString() + ";";
     }
 
-    public static printSettings() {
+    public printSettings() {
         console.log("textSize: " + this.textSize);
         console.log("dColor: " + this.dColor);
         console.log("dFont: " + this.dFont);

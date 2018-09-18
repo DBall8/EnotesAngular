@@ -1,6 +1,10 @@
 import { NoteComponent } from '../note/note.component';
 
-const MAXUNDO: number = 40;
+/**
+    A class for creating a custom undo handler. Used where the browser's built in handler isnt sufficient
+*/
+
+const MAXUNDO: number = 40; // the max number steps back that can be taken
 const UNDOTIME: number = 2000; // time until a new undo state is saved in ms
 
 

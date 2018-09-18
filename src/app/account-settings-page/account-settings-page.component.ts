@@ -1,8 +1,13 @@
 import { Component, OnInit, Input, Output, EventEmitter, ElementRef, ViewChild } from '@angular/core';
 
 import { LoginService } from '../services/login.service';
-import { Settings } from '../classes/Settings';
+import { SettingsService } from '../services/settings.service';
 
+/**
+
+Component for creating an options box that sits over the rest of the window
+
+*/
 
 @Component({
   selector: 'app-account-settings-page',
@@ -11,8 +16,8 @@ import { Settings } from '../classes/Settings';
 })
 export class AccountSettingsPageComponent implements OnInit {
 
-    @Input() display: boolean;
-    @Output() displayChange = new EventEmitter();
+    @Input() display: boolean; // controls the visibility of the page
+    @Output() displayChange = new EventEmitter(); // event that alerts app that settings were changec
 
     // Text size radio buttons
     textRBGroup: ElementRef[] = [];
@@ -50,36 +55,40 @@ export class AccountSettingsPageComponent implements OnInit {
     @ViewChild("NewPassword") newPassword: ElementRef;
     @ViewChild("ConfirmPassword") confirmPassword: ElementRef;
 
-    errorText: String = "";
+    errorText: string = ""; // string for placing error messages
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private settings: SettingsService) { }
 
+    /**
+        On initialization, select the radio buttons corresponding to the current settings
+    */
     ngOnInit() {
-        var textSize: string = Settings.textSize;
+        // text size
+        var textSize: string = this.settings.textSize;
         this.textRBGroup = [this.textSmallRB, this.textMediumRB, this.textLargeRB];
         this.textRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.labels[0].textContent === textSize) {
                 element.nativeElement.checked = true;
             }
         });
-
-        var dColor: string = Settings.dColor;
+        // color
+        var dColor: string = this.settings.dColor;
         this.dColorRBGroup = [this.yellowRB, this.orangeRB, this.redRB, this.greenRB, this.blueRB, this.purpleRB];
         this.dColorRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.labels[0].textContent === dColor) {
                 element.nativeElement.checked = true;
             }
         });
-
-        var dFont: string = Settings.dFont;
+        // font
+        var dFont: string = this.settings.dFont;
         this.fontRBGroup = [this.arialRB, this.palantinoRB, this.courierRB];
         this.fontRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.labels[0].textContent === dFont) {
                 element.nativeElement.checked = true;
             }
         });
-
-        var dFontSize: number = Settings.dFontSize;
+        // font size
+        var dFontSize: number = this.settings.dFontSize;
         this.fontSizeRBGroup = [this.d10RB, this.d12RB, this.d14RB, this.d18RB, this.d24RB, this.d32RB];
         this.fontSizeRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.labels[0].textContent === (dFontSize + " pt")) {
@@ -88,12 +97,18 @@ export class AccountSettingsPageComponent implements OnInit {
         });
     }
 
+    /**
+        Whenever a user types into a field, it calls this method, which clears any error message
+    */
     onType() {
         if (this.errorText) {
             this.errorText = "";
         }
     }
 
+    /**
+        Called when the settings page is closed using the x or cancel button
+    */
     close() {
         this.clearFields();
         this.errorText = "";
@@ -101,34 +116,41 @@ export class AccountSettingsPageComponent implements OnInit {
         this.displayChange.emit(false);
     }
 
+    /**
+        Called whenever the settings page is closed with the save button
+        Updates settings to match the ones selected
+    */
     save() {
+        // text
         this.textRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.checked) {
-                Settings.textSize = element.nativeElement.labels[0].textContent;
+                this.settings.textSize = element.nativeElement.labels[0].textContent;
             }
         });
-
+        // color
         this.dColorRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.checked) {
-                Settings.dColor = element.nativeElement.labels[0].textContent;
+                this.settings.dColor = element.nativeElement.labels[0].textContent;
             }
         });
-
+        // font
         this.fontRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.checked) {
-                Settings.dFont = element.nativeElement.labels[0].textContent;
+                this.settings.dFont = element.nativeElement.labels[0].textContent;
             }
         });
-
+        // font size
         this.fontSizeRBGroup.map((element: ElementRef) => {
             if (element.nativeElement.checked) {
                 var sizeStr = element.nativeElement.labels[0].textContent;
-                Settings.dFontSize = Number(sizeStr.substring(0, sizeStr.length - 3));
+                this.settings.dFontSize = Number(sizeStr.substring(0, sizeStr.length - 3));
             }
         });
 
-        Settings.save();
+        // Save the settings as cookies
+        this.settings.save();
 
+        // Update the server about the user settings
         this.loginService.updateUserSettings().subscribe((res: any) => {
             if (res.status != 200 || !res.body.successful) {
                 this.errorText = "Failed to update settings. Please try again later.";
@@ -139,12 +161,16 @@ export class AccountSettingsPageComponent implements OnInit {
         });
     }
 
+    /**
+        Attempts to update the user's password
+    */
     updatePassword() {
-
+        // get the values of all three requried fields
         var oldPassword: String = this.oldPassword.nativeElement.value;
         var newPassword: String = this.newPassword.nativeElement.value;
         var confirmPassword: String = this.confirmPassword.nativeElement.value;
 
+        // Make sure all three are filled and not empty
         if (!oldPassword) {
             this.errorText = "Please enter your old password.";
             return;
@@ -158,11 +184,13 @@ export class AccountSettingsPageComponent implements OnInit {
             return;
         }
 
+        // make sure the new password and the confirm password fields match
         if (confirmPassword !== newPassword) {
             this.errorText = "Error: new passwords do not match.";
             return;
         }
 
+        // tell the server to update to the new password
         this.loginService.changePassword(oldPassword, newPassword).subscribe((res: any) => {
             if (res.status != 200) {
                 this.errorText = "Failed to update password. Please try again later.";
@@ -178,6 +206,9 @@ export class AccountSettingsPageComponent implements OnInit {
         
     }
 
+    /**
+        clears all fields
+    */
     clearFields() {
         this.oldPassword.nativeElement.value = "";
         this.newPassword.nativeElement.value = "";

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
-import { Settings } from '../classes/Settings';
+import { SettingsService } from './settings.service';
 
 const httpHeaders: HttpHeaders = new HttpHeaders({
     'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ const httpHeaders: HttpHeaders = new HttpHeaders({
 })
 export class LoginService {
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private settings: SettingsService) { }
 
     login(username: String, password: String, stayLogged: boolean): Observable<any> {
         return this.http.request("POST", "/login", {
@@ -50,9 +50,9 @@ export class LoginService {
     updateUserSettings() {
         return this.http.request("POST", "/user", {
             observe: 'response', body: JSON.stringify({
-                dfont: Settings.dFont,
-                dfontsize: Settings.dFontSize,
-                dcolor: Settings.dColor
+                dfont: this.settings.dFont,
+                dfontsize: this.settings.dFontSize,
+                dcolor: this.settings.dColor
             }), headers: httpHeaders
         });
     }

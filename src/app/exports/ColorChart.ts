@@ -1,4 +1,6 @@
-
+/**
+    A json object for getting the color json corresponding to a string
+*/
 export const ColorChart = {
 	yellow: {
 		head: '#ddaf00',

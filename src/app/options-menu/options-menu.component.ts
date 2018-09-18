@@ -22,10 +22,10 @@ export class OptionsMenuComponent implements OnInit {
   constructor(private loginService: LoginService, private router: Router) { }
 
     ngOnInit() {
-  }
+    }
 
     // Log out the user
-    logout() {
+    private logout() {
         this.loginService.logout().subscribe((res) => {
             if (res.status == 200) {
                 this.router.navigate(['login']);
@@ -34,12 +34,12 @@ export class OptionsMenuComponent implements OnInit {
     }
 
     // Navigate to the changelog page
-    gotoChangelog() {
+    private gotoChangelog() {
         this.router.navigate(['changelog']);
     }
 
     // Shows the account settings window
-    showAccountSettingsWindow() {
+    private showAccountSettingsWindow() {
         this.showAccountSettings.emit();
         this.visible = false;
     }

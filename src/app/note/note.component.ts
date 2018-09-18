@@ -5,7 +5,7 @@ import { Note } from '../classes/note';
 import { ColorChart } from '../exports/ColorChart';
 import { UndoHandler } from '../classes/undoHandler';
 import { Config } from '../exports/config';
-import { Settings } from '../classes/Settings';
+import { SettingsService } from '../services/settings.service';
 
 /* NoteComponent
 
@@ -33,19 +33,19 @@ export class NoteComponent implements OnInit {
     prevContent: string;
     prevTitle: string
 
-    constructor(private noteService: NoteService) { }
+    constructor(private noteService: NoteService, private settings: SettingsService) { }
 
 
     ngOnInit() {
     }
 
     /* Adds a new note */
-    addNote() {
+    private addNote() {
         this.noteService.addNote(this.note.x + 100, this.note.y + 100);
     }
 
     /* Deletes a note */
-    deleteNote() {
+    private deleteNote() {
         // Confirm the delete
         if (window.confirm("Are you sure you want to delete this note?")) {
             this.noteService.deleteNote(this.note.id);
@@ -53,7 +53,7 @@ export class NoteComponent implements OnInit {
     }
 
     /* Loads the note's fields from the Note class */
-    setStyles() {
+    private setStyles() {
         var styles = {
             'width': this.note.width + "px",
             'height': this.note.height + "px",
@@ -71,7 +71,7 @@ export class NoteComponent implements OnInit {
     @param selected True if the note is focused
     @return The color to make the head of the note
     */
-    setHeadColor(selected: boolean) {
+    private setHeadColor(selected: boolean) {
         if (selected) {
             return this.note.colors && this.note.colors.head ? this.note.colors.head : ColorChart.yellow.head;
         }
@@ -83,7 +83,7 @@ export class NoteComponent implements OnInit {
     /* Starts a note's drag event
     @param e The mouse event that started the drag
     */
-    dragStart(e: MouseEvent) {
+    private dragStart(e: MouseEvent) {
         //e.stopPropagation();
         this.onDrag.emit({ note: this.note, x: e.clientX, y: e.clientY });
     }
@@ -91,14 +91,14 @@ export class NoteComponent implements OnInit {
     /* Starts a note's resize event
     @param e The mouse event that started the resize
     */
-    resizeStart(e: MouseEvent) {
+    private resizeStart(e: MouseEvent) {
         e.stopPropagation();
         e.preventDefault();
         this.onResize.emit({ note: this.note, x: e.clientX, y: e.clientY });
     }
 
     /* Marks the note as unsaved whenever a change is made */
-    keyDown(e, inTitle) {
+    private keyDown(e, inTitle) {
 
         if (Config.isFirefox) {
 
@@ -163,7 +163,7 @@ export class NoteComponent implements OnInit {
     /**
         Event that fires whenever a key is released in when in the note
     */
-    keyUp(e) {
+    private keyUp(e) {
         // If in firefox, mark control as un-pressed
         if (Config.isFirefox && e.key == 'Control') {
             this.ctrlPress = false;
@@ -177,7 +177,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when a title is double clicked
     */
-    selectTitle(e) {
+    private selectTitle(e) {
         // focus title and make editable
         e.target.focus();
         e.target.readOnly = false;
@@ -186,7 +186,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when a title is clicked
     */
-    titleClick(e) {
+    private titleClick(e) {
         // ready a new undo
         this.resetUndo();
         // Prevent cursor selection if not being edited
@@ -198,7 +198,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when title loses focus
     */
-    deselectTitle(e) {
+    private deselectTitle(e) {
         // put title back tor read only
         e.target.readOnly = true;
     }
@@ -206,7 +206,7 @@ export class NoteComponent implements OnInit {
     /**
         Adds a new undoable state to the undohandler
     */
-    track(inTitle: boolean) {
+    private track(inTitle: boolean) {
         // Make sure undo object exists
         if (!this.undoHandler) return;
         // Save title if event called in the title, or content if called in note content
@@ -221,14 +221,14 @@ export class NoteComponent implements OnInit {
     /**
         Resets undo counter to be ready for another undo state
     */
-    resetUndo() {
+    private resetUndo() {
         if (this.undoHandler) this.undoHandler.readyUndo();
     }
 
     /* Starts a note's right click event
     @param e The mouse event that launched the right click
     */
-    rightClick(e) {
+    private rightClick(e) {
         e.preventDefault();
 
         var el = this.contentArea.nativeElement;
@@ -269,21 +269,28 @@ export class NoteComponent implements OnInit {
         }
     }
 
-    calculateTextSize(isTitle: boolean) {
+    /**
+        Figures out the font size based on the note's font size and the text size setting
+    */
+    private calculateTextSize(isTitle: boolean) {
         var size: number;
         var test = false
+
+        // if the note has a font size, start with that
         if (this.note.fontSize) {
             size = Number(this.note.fontSize);
         }
+        // otherwise default to size 12
         else {
             size = 12;
         }
         
+        // increase size if this is the title
         if (isTitle) size += 4;
-        switch (Settings.textSize) {
+        // increase corresponding to the current text size setting
+        switch (this.settings.textSize) {
             default:
             case "Small":
-                size += 0;
                 break;
             case "Medium":
                 size += 4;
@@ -293,6 +300,7 @@ export class NoteComponent implements OnInit {
                 break;
         }
 
+        // add px string to make a font size
         return size + 'px'
     }
 }

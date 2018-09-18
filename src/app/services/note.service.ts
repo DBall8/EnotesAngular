@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import * as io from 'socket.io-client';
 
 import { Config } from '../exports/config';
-import { Settings } from '../classes/Settings';
+import { SettingsService } from './settings.service';
 import { Note } from '../classes/note';
 import { NotePage } from '../classes/notePage';
 import { ColorChart } from '../exports/ColorChart';
@@ -44,7 +44,7 @@ export class NoteService {
     ]
 
 
-    constructor(private http: HttpClient, private router: Router) { }
+    constructor(private http: HttpClient, private router: Router, private settings: SettingsService) { }
 
     /*
         Retrieves all notes and note pags for the user
@@ -162,9 +162,9 @@ export class NoteService {
     addNote(x: number, y: number) {
         // Create a new note isntance that is empty
         var note: Note = new Note('note-' + new Date().getTime(), this.currentPageID, "", "", x, y, 200, 200, ColorChart.yellow);
-        if (Settings.dFont) note.font = Settings.dFont;
-        if (Settings.dFontSize) note.fontSize = Settings.dFontSize;
-        if (Settings.dColor) note.colors = ColorChart[Settings.dColor.toLowerCase()];
+        if (this.settings.dFont) note.font = this.settings.dFont;
+        if (this.settings.dFontSize) note.fontSize = this.settings.dFontSize;
+        if (this.settings.dColor) note.colors = ColorChart[this.settings.dColor.toLowerCase()];
         note.zindex = 9999;
         // add it to the array
         this.notes.push(note);

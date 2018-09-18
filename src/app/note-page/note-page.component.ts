@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { NoteService } from '../services/note.service';
+import { SettingsService } from '../services/settings.service';
 import { Note } from '../classes/note';
 import { NotePage } from '../classes/notePage';
 import { UndoHandler } from '../classes/undoHandler';
@@ -57,13 +58,15 @@ export class NotePageComponent implements OnInit {
 
     undoHandler: UndoHandler;// = new UndoHandler();
 
-    constructor(public noteService: NoteService, private router: Router) {
+    constructor(public noteService: NoteService, private router: Router, private settings: SettingsService) {
         if (Config.isFirefox) {
             this.undoHandler = new UndoHandler();
         }
     }
 
     ngOnInit() {
+
+        this.settings.init();
 
         // Set up an interval that checks if there are any unsaved chantges and updates the server if there are
         window.setInterval(() => {
@@ -114,7 +117,7 @@ export class NotePageComponent implements OnInit {
     /* Handles the mouse move event for the window
     @param e The mouse event
     */
-    mouseMove(e: MouseEvent) {
+    private mouseMove(e: MouseEvent) {
         // If a note drag is in progress, update the notes location
         if (this.drag.note) {
             this.drag.note.x = e.clientX - this.drag.offsetX;
@@ -133,7 +136,7 @@ export class NotePageComponent implements OnInit {
     /* Handles the mouse up event for the window
     @param e The mouse event
     */
-    mouseUp(e: MouseEvent) {
+    private mouseUp(e: MouseEvent) {
         // If a resize event is in progress, update the note's size and end the resize event
         if (this.resize.note) {
             this.resize.note.width = this.resize.startW + e.clientX - this.resize.startX;
@@ -160,7 +163,7 @@ export class NotePageComponent implements OnInit {
     /* Selects a note (brings it to focus) and pushes back all other notes
     @param note The note to bring to the front
     */
-    selectNote(note: Note) {
+    private selectNote(note: Note) {
         
         // If the note is already selected, do nothing
         if (note.selected) {
@@ -193,7 +196,7 @@ export class NotePageComponent implements OnInit {
     * one with zindex 110, one with 980, and one with 981. This puts them back to 100, 101, 102 )
     * And then also updates the server about each note.
     */
-    restackNotes() {
+    private restackNotes() {
         var notes: Note[] = this.noteService.notes;
         var len = notes.length;
         var swapNote: Note;
@@ -217,7 +220,7 @@ export class NotePageComponent implements OnInit {
     /* Starts a note drag event
     @param event The event emitted by the note thats being dragged
     */
-    noteDragStart(event) {
+    private noteDragStart(event) {
         // Save the note and the mouse's offset from from the note's position for later use when the mouse is moved
         this.drag = {
             note: event.note,
@@ -229,7 +232,7 @@ export class NotePageComponent implements OnInit {
     /* Starts a note resize event
     @param event The event emitted by the note thats being resized
     */
-    noteResizeStart(event) {
+    private noteResizeStart(event) {
         // Save the note, the mouse's start position, and the note's starting size for later use when the mouse is moved
         this.resize = {
             note: event.note,
@@ -241,7 +244,7 @@ export class NotePageComponent implements OnInit {
     }
 
     // Resets the resize event object
-    resetResize() {
+    private resetResize() {
         this.resize = {
             note: null,
             startX: 0,
@@ -253,7 +256,7 @@ export class NotePageComponent implements OnInit {
     }
 
     // Resets the drag event object
-    resetDrag() {
+    private resetDrag() {
         this.drag = {
             note: null,
             offsetX: 0,
@@ -264,7 +267,7 @@ export class NotePageComponent implements OnInit {
     /* Launches a right click menu when a note's right click event is received
     @param e The event emitted by the note
     */
-    noteRightClicked(e) {
+    private noteRightClicked(e) {
         // update the right click menu's (rcm) position
         this.rcmDisplay.x = e.x;
         this.rcmDisplay.y = e.y;
@@ -277,22 +280,32 @@ export class NotePageComponent implements OnInit {
         this.rcmDisplay.visible = true;
     }
 
-    goToHelp() {
+    /**
+        Navigates to the help page
+    */
+    private goToHelp() {
         this.router.navigate(['help']);
     }
 
-    // Reloads the notes from the server
-    refresh() {
+    /**
+        Reloads the notes from the server
+    */
+    private refresh() {
         this.noteService.refreshNotes();
     }
 
-    // Opens and closes the options menu
-    toggleOptions(e) {
+    /**
+        Opens and closes the options menu
+    */
+    private toggleOptions(e) {
         e.stopPropagation();
         this.optionsVisible = !this.optionsVisible
     }
 
-    showAccountSettings() {
+    /**
+        Shows the account settings page
+    */
+    private showAccountSettings() {
         this.accountSettingsVisible = true;
     }
 

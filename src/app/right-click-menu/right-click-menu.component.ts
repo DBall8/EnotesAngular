@@ -22,8 +22,8 @@ export class RightClickMenuComponent implements OnInit {
     @ViewChild('paste') paste: ElementRef;
 
     colorChart: Object = ColorChart;
-    fontSizes = [10, 12, 14, 18, 24, 32];
-    fonts = ['Arial', 'Palatino Linotype', 'Courier New'];
+    fontSizes: number[] = [10, 12, 14, 18, 24, 32];
+    fonts: string[] = ['Arial', 'Palatino Linotype', 'Courier New'];
 
     constructor(public noteService: NoteService) { 
     }
@@ -31,10 +31,10 @@ export class RightClickMenuComponent implements OnInit {
     ngOnInit() {
         this.copy.nativeElement.addEventListener('click', () => this.copyText());
         this.paste.nativeElement.addEventListener('click', () => this.pasteText());
-  }
+    }
 
     // Loads the style from the display object
-    setStyle() {
+    private setStyle() {
         return {
 		    'display': this.display.visible? 'block': 'none',
 		    'left': this.display.x + 'px',
@@ -46,42 +46,42 @@ export class RightClickMenuComponent implements OnInit {
     @param e The click event that opened the menu
     @param option The name of the selected option
     */
-    selectOption(e, option) {
+    private selectOption(e, option) {
         e.stopPropagation();
         this.display.subMenu = option;
     }
 
     /* Selects a color for the note to become
-    @para colorObj The object representing the color that was selected
+    @param colorObj The object representing the color that was selected
     */
-    selectColor(colorObj) {
+    private selectColor(colorObj) {
         this.display.note.colors = colorObj; // change the note's colors
         this.display.note.saved = false; // mark note as unsaved
         this.noteService.changesSaved = false;
     }
 
-    selectFontSize(size) {
+    private selectFontSize(size) {
         this.display.note.fontSize = size;
         this.display.note.saved = false;
         this.noteService.changesSaved = false;
     }
 
-    selectFont(font) {
+    private selectFont(font) {
         this.display.note.font = font;
         this.display.note.saved = false;
         this.noteService.changesSaved = false;
     }
 
-    moveNoteToPage(pageID: string) {
+    private moveNoteToPage(pageID: string) {
         if (!this.display.note) return;
         this.noteService.moveNoteToPage(this.display.note, pageID, true);
     }
 
-    getColors() {
+    private getColors() {
         return Object.keys(this.colorChart);
     }
 
-    copyText() {
+    private copyText() {
         var selBox = document.createElement('textarea');
         selBox.style.position = 'fixed';
         selBox.style.left = '0';
@@ -95,7 +95,7 @@ export class RightClickMenuComponent implements OnInit {
         document.body.removeChild(selBox);
     }
 
-    pasteText() {
+    private pasteText() {
         window.alert("Please use the keyboard shortcut (Ctrl + v) to paste.");
     }
 
