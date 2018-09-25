@@ -40,12 +40,12 @@ export class NoteComponent implements OnInit {
     }
 
     /* Adds a new note */
-    private addNote() {
+    addNote() {
         this.noteService.addNote(this.note.x + 100, this.note.y + 100);
     }
 
     /* Deletes a note */
-    private deleteNote() {
+    deleteNote() {
         // Confirm the delete
         if (window.confirm("Are you sure you want to delete this note?")) {
             this.noteService.deleteNote(this.note.id);
@@ -53,7 +53,7 @@ export class NoteComponent implements OnInit {
     }
 
     /* Loads the note's fields from the Note class */
-    private setStyles() {
+    setStyles() {
         var styles = {
             'width': this.note.width + "px",
             'height': this.note.height + "px",
@@ -71,7 +71,7 @@ export class NoteComponent implements OnInit {
     @param selected True if the note is focused
     @return The color to make the head of the note
     */
-    private setHeadColor(selected: boolean) {
+    setHeadColor(selected: boolean) {
         if (selected) {
             return this.note.colors && this.note.colors.head ? this.note.colors.head : ColorChart.yellow.head;
         }
@@ -83,7 +83,7 @@ export class NoteComponent implements OnInit {
     /* Starts a note's drag event
     @param e The mouse event that started the drag
     */
-    private dragStart(e: MouseEvent) {
+    dragStart(e: MouseEvent) {
         //e.stopPropagation();
         this.onDrag.emit({ note: this.note, x: e.clientX, y: e.clientY });
     }
@@ -91,14 +91,14 @@ export class NoteComponent implements OnInit {
     /* Starts a note's resize event
     @param e The mouse event that started the resize
     */
-    private resizeStart(e: MouseEvent) {
+    resizeStart(e: MouseEvent) {
         e.stopPropagation();
         e.preventDefault();
         this.onResize.emit({ note: this.note, x: e.clientX, y: e.clientY });
     }
 
     /* Marks the note as unsaved whenever a change is made */
-    private keyDown(e, inTitle) {
+    keyDown(e, inTitle) {
 
         if (Config.isFirefox) {
 
@@ -163,7 +163,7 @@ export class NoteComponent implements OnInit {
     /**
         Event that fires whenever a key is released in when in the note
     */
-    private keyUp(e) {
+    keyUp(e) {
         // If in firefox, mark control as un-pressed
         if (Config.isFirefox && e.key == 'Control') {
             this.ctrlPress = false;
@@ -177,7 +177,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when a title is double clicked
     */
-    private selectTitle(e) {
+    selectTitle(e) {
         // focus title and make editable
         e.target.focus();
         e.target.readOnly = false;
@@ -186,7 +186,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when a title is clicked
     */
-    private titleClick(e) {
+    titleClick(e) {
         // ready a new undo
         this.resetUndo();
         // Prevent cursor selection if not being edited
@@ -198,7 +198,7 @@ export class NoteComponent implements OnInit {
     /**
         Called when title loses focus
     */
-    private deselectTitle(e) {
+    deselectTitle(e) {
         // put title back tor read only
         e.target.readOnly = true;
     }
@@ -206,7 +206,7 @@ export class NoteComponent implements OnInit {
     /**
         Adds a new undoable state to the undohandler
     */
-    private track(inTitle: boolean) {
+    track(inTitle: boolean) {
         // Make sure undo object exists
         if (!this.undoHandler) return;
         // Save title if event called in the title, or content if called in note content
@@ -221,14 +221,14 @@ export class NoteComponent implements OnInit {
     /**
         Resets undo counter to be ready for another undo state
     */
-    private resetUndo() {
+    resetUndo() {
         if (this.undoHandler) this.undoHandler.readyUndo();
     }
 
     /* Starts a note's right click event
     @param e The mouse event that launched the right click
     */
-    private rightClick(e) {
+    rightClick(e) {
         e.preventDefault();
 
         var el = this.contentArea.nativeElement;
@@ -272,7 +272,7 @@ export class NoteComponent implements OnInit {
     /**
         Figures out the font size based on the note's font size and the text size setting
     */
-    private calculateTextSize(isTitle: boolean) {
+    calculateTextSize(isTitle: boolean) {
         var size: number;
         var test = false
 

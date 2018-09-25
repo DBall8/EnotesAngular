@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
     @param password The given password input
     @param confirmPassword The confirm password field input
     */
-    private login(username: string, password: string, confirmPassword: string) {
+    login(username: string, password: string, confirmPassword: string) {
 
         // Make sure neither field is blank
         if (!username) {
@@ -110,7 +110,7 @@ export class LoginComponent implements OnInit {
     /* Looks at key presses made while on the input field, and submits the form if the enter button is pressed
     @param key The key being pressed
     */
-    private submit(key) {
+    submit(key) {
         // As the user types, remove the error message
         if (this.errorText) {
             this.errorText = '';

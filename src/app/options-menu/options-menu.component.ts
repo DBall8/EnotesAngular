@@ -25,7 +25,7 @@ export class OptionsMenuComponent implements OnInit {
     }
 
     // Log out the user
-    private logout() {
+    logout() {
         this.loginService.logout().subscribe((res) => {
             if (res.status == 200) {
                 this.router.navigate(['login']);
@@ -34,12 +34,12 @@ export class OptionsMenuComponent implements OnInit {
     }
 
     // Navigate to the changelog page
-    private gotoChangelog() {
+    gotoChangelog() {
         this.router.navigate(['changelog']);
     }
 
     // Shows the account settings window
-    private showAccountSettingsWindow() {
+    showAccountSettingsWindow() {
         this.showAccountSettings.emit();
         this.visible = false;
     }

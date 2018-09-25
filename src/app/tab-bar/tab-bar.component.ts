@@ -32,7 +32,7 @@ export class TabBarComponent implements OnInit {
 
         window.addEventListener("mousemove", (e) => {
             if (this.drag && this.drag.started) {
-                this.drag.tab.style.left = e.screenX - this.drag.center + 'px';
+                this.drag.tab.style.left = e.clientX - this.drag.center + 'px';
                 // loop through all tabs, except the last (the add tab tab)
                 for (var i = 0; i < this.tabElements.length - 1; i++) {
                     if (this.drag.tab != this.tabElements[i]) {

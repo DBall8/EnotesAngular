@@ -34,7 +34,7 @@ export class RightClickMenuComponent implements OnInit {
     }
 
     // Loads the style from the display object
-    private setStyle() {
+    setStyle() {
         return {
 		    'display': this.display.visible? 'block': 'none',
 		    'left': this.display.x + 'px',
@@ -46,7 +46,7 @@ export class RightClickMenuComponent implements OnInit {
     @param e The click event that opened the menu
     @param option The name of the selected option
     */
-    private selectOption(e, option) {
+    selectOption(e, option) {
         e.stopPropagation();
         this.display.subMenu = option;
     }
@@ -77,7 +77,7 @@ export class RightClickMenuComponent implements OnInit {
         this.noteService.moveNoteToPage(this.display.note, pageID, true);
     }
 
-    private getColors() {
+    getColors() {
         return Object.keys(this.colorChart);
     }
 

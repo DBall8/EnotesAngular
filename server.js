@@ -125,6 +125,11 @@ app.post('/changepassword', requireLogin, (req, res) =>{
     changePassword(req, res);
 })
 
+app.get('/connectiontest', requireLogin, (req, res) => {
+    res.writeHead(200);
+    res.end("true");
+})
+
 app.all("*", (req, res, next) => {
 
     var uri = url.parse(req.url);

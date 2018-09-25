@@ -283,21 +283,21 @@ export class NotePageComponent implements OnInit {
     /**
         Navigates to the help page
     */
-    private goToHelp() {
+    goToHelp() {
         this.router.navigate(['help']);
     }
 
     /**
         Reloads the notes from the server
     */
-    private refresh() {
+    refresh() {
         this.noteService.refreshNotes();
     }
 
     /**
         Opens and closes the options menu
     */
-    private toggleOptions(e) {
+    toggleOptions(e) {
         e.stopPropagation();
         this.optionsVisible = !this.optionsVisible
     }
@@ -305,7 +305,7 @@ export class NotePageComponent implements OnInit {
     /**
         Shows the account settings page
     */
-    private showAccountSettings() {
+    showAccountSettings() {
         this.accountSettingsVisible = true;
     }
 
