@@ -74,11 +74,14 @@ label{
 	background: none;
 	color: white;
 	border: none;
+    margin-bottom: 5px;
 }
 
 .loginError{
 	color: red;
 	font-weight: bold;
+    height: 20px;
+    display: block;
 }
 
 .title{

@@ -85,7 +85,7 @@ export class NoteComponent implements OnInit {
     */
     dragStart(e: MouseEvent) {
         //e.stopPropagation();
-        this.onDrag.emit({ note: this.note, x: e.clientX, y: e.clientY });
+        this.onDrag.emit({ note: this.note, x: e.pageX, y: e.pageY });
     }
 
     /* Starts a note's resize event
@@ -94,7 +94,7 @@ export class NoteComponent implements OnInit {
     resizeStart(e: MouseEvent) {
         e.stopPropagation();
         e.preventDefault();
-        this.onResize.emit({ note: this.note, x: e.clientX, y: e.clientY });
+        this.onResize.emit({ note: this.note, x: e.pageX, y: e.pageY });
     }
 
     /* Marks the note as unsaved whenever a change is made */

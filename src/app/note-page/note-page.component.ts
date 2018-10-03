@@ -120,16 +120,17 @@ export class NotePageComponent implements OnInit {
     private mouseMove(e: MouseEvent) {
         // If a note drag is in progress, update the notes location
         if (this.drag.note) {
-            this.drag.note.x = e.clientX - this.drag.offsetX;
-            this.drag.note.y = e.clientY - this.drag.offsetY;
+            //console.log(e);
+            this.drag.note.x = e.pageX - this.drag.offsetX;
+            this.drag.note.y = e.pageY - this.drag.offsetY;
             if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
             if (this.drag.note.x < 0) this.drag.note.x = 0;
             
         }
         // If a note resize is in progress, update the notes size
         if (this.resize.note) {
-            this.resize.note.width = this.resize.startW + e.clientX - this.resize.startX;
-            this.resize.note.height = this.resize.startH + e.clientY - this.resize.startY;
+            this.resize.note.width = this.resize.startW + e.pageX - this.resize.startX;
+            this.resize.note.height = this.resize.startH + e.pageY - this.resize.startY;
         }
     }
 
@@ -139,8 +140,8 @@ export class NotePageComponent implements OnInit {
     private mouseUp(e: MouseEvent) {
         // If a resize event is in progress, update the note's size and end the resize event
         if (this.resize.note) {
-            this.resize.note.width = this.resize.startW + e.clientX - this.resize.startX;
-            this.resize.note.height = this.resize.startH + e.clientY - this.resize.startY;
+            this.resize.note.width = this.resize.startW + e.pageX - this.resize.startX;
+            this.resize.note.height = this.resize.startH + e.pageY - this.resize.startY;
             this.resize.note.saved = false;
 
             this.noteService.changesSaved = false;
@@ -149,8 +150,8 @@ export class NotePageComponent implements OnInit {
 
         // If a drag event is in progress, update the note's location and end the drag event
         if (this.drag.note) {
-            this.drag.note.x = e.clientX - this.drag.offsetX;
-            this.drag.note.y = e.clientY - this.drag.offsetY;
+            this.drag.note.x = e.pageX - this.drag.offsetX;
+            this.drag.note.y = e.pageY - this.drag.offsetY;
             if (this.drag.note.y < MAX_HEIGHT) this.drag.note.y = MAX_HEIGHT;
             if (this.drag.note.x < 0) this.drag.note.x = 0;
             this.drag.note.saved = false;

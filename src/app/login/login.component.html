@@ -14,8 +14,7 @@
                 <label>Confirm password:</label><br />
                 <input #ConfirmPassword class="loginInput" type="password" maxlength="252" (keyup)="submit($event.key)"/>
             </div>
-			<input class="checkbox" type="checkbox" #stayLogged checked="true"/>Stay logged in
-			<br />
+			<!--<input class="checkbox" type="checkbox" #stayLogged checked="true"/>Stay logged in -->
 			<button class="loginButton" type="button" (click)="login(Username.value, Password.value, ConfirmPassword.value)">{{isLogin? 'Log In': 'Create Account'}}</button>
 		</form>
 		<br />
