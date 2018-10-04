@@ -527,7 +527,7 @@ export class NoteService {
             note.y = input.y;
             note.width = input.width;
             note.height = input.height;
-            if (input.fontSize) { note.fontSize = input.fontsize; }
+            if (input.fontsize) { note.fontSize = input.fontsize; }
             if (input.font) { note.font = input.font; }
             note.zindex = input.zindex;
             note.colors = input.colors;

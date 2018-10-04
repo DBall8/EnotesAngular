@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 const COOKIE_DAYS = 60;
-const DEFAULT_TEXTSIZE = "Medium";
+const DEFAULT_TEXTSIZE = "Small";
 const DEFAULT_DCOLOR = "Yellow";
 const DEFAULT_DFONT = "Arial";
 const DEFAULT_DFONTSIZE = 12;

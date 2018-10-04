@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
             return;
         }
 
-        var stayLogged: boolean = this.stayLoggedCheckbox.nativeElement.checked;
+        var stayLogged: boolean = true;//this.stayLoggedCheckbox.nativeElement.checked;
 
         // If on log in page, attempt to log in
         if (this.isLogin) {
@@ -63,9 +63,10 @@ export class LoginComponent implements OnInit {
                 if (res.body.successful) {
 
                     this.settings.restoreDefaults(false);
-                    if (res.body.dFont) this.settings.dFont = res.body.dFont;
-                    if (res.body.dFontSize) this.settings.dFontSize = res.body.dFontSize;
-                    if (res.body.dColor) this.settings.dColor = res.body.dColor;
+                    
+                    if (res.body.dfont) this.settings.dFont = res.body.dfont;
+                    if (res.body.dfontsize) this.settings.dFontSize = res.body.dfontsize;
+                    if (res.body.dcolor) this.settings.dColor = res.body.dcolor;
                     this.settings.save();
 
                     this.router.navigate(['/']);
