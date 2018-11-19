@@ -92,6 +92,12 @@ export class NoteService {
         Same as get notes, except does not try to restart the socket
     */
     refreshNotes() {
+
+        //this.notes = [];
+        //this.visibleNotes = [];
+        //this.notePages = [];
+        console.log("Refresh");
+
         if (Config.DEBUG) {
             this.notes = this.dummyNotes;
         }
@@ -103,6 +109,7 @@ export class NoteService {
                     return;
                 }
                 var body: any = res.body;
+                console.log(body);
 
                 // If unsuccessfull, redirect to login page
                 if (body.sessionExpired || !body.successful) {
@@ -503,6 +510,7 @@ export class NoteService {
         // receive an ID from the server to identify this client socket
         this.socket.on("ready", (socketid) => {
             if (this.socketID !== "") {
+                console.log("About to refresh");
                 this.refreshNotes();
             }
             this.socketID = socketid;
