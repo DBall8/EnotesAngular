@@ -1,4 +1,4 @@
-﻿var http = require('http')
+var http = require('http')
 	, https = require('https')
 	, fs = require('fs')
 	, qs = require('querystring')
@@ -8,14 +8,14 @@
     , sessions = require('client-sessions')
 	, crypto = require('crypto')
 	, pg = require('pg')
-	, port = process.env.PORT || 8080
+	, port = process.env.PORT || 443
 
 
 if (process.env.DATABASE_URL){
     var dbURL = process.env.DATABASE_URL;
 }
 else {
-    var dbURL = require('./secrets.js').dbURL
+    var dbURL = require(__dirname + '/secrets.js').dbURL
 }
 
 // open the database
@@ -24,14 +24,19 @@ db.connect().then(() => {
     db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dfont VARCHAR(50), dfontsize INTEGER, dcolor VARCHAR(50))');
 db.query('CREATE TABLE IF NOT EXISTS notePages (pageid VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
 db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontsize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageid VARCHAR(100) REFERENCES notePages(pageid))');
-    console.log("Successfully connected to database.");
+    console.log("Successfully connected to database. " + getTimestamp());
 }, (err) =>{
     console.error("Failed to connect to database.")
 	console.error(err)
 })
 
 var app = express();
-var server = http.createServer(app);
+var server = https.createServer(
+{
+	ca: fs.readFileSync(__dirname + '/ssl/enotes_site.ca-bundle'),
+	key: fs.readFileSync(__dirname + '/ssl/enotes_site.key'),
+	cert: fs.readFileSync(__dirname + '/ssl/enotes_site.crt')
+}, app);
 var io = require('socket.io')(server);
 
 var secretStr = process.env.SECRET_STR ? process.env.SECRET_STR : "kuayborn98uno9y8vor8yaionvol ya";
@@ -133,13 +138,13 @@ app.get('/connectiontest', requireLogin, (req, res) => {
 app.all("*", (req, res, next) => {
 
     var uri = url.parse(req.url);
-    var path =  './dist/ENotes' + uri.pathname
+    var path = __dirname + '/dist/ENotes' + uri.pathname
 
     if(uri.pathname !== '/' && fs.existsSync(path)){
         sendFile(res, path);
     }
     else{
-        sendFile(res, './dist/ENotes/index.html');
+        sendFile(res, __dirname + '/dist/ENotes/index.html');
     }
     
 })
@@ -162,7 +167,7 @@ io.on('connect', (socket) => {
             activeClients[username] = [socket.id];
         }
         
-        console.log(username + " is ready");
+        console.log(username + " is ready: " + getTimestamp());
     })
 
     socket.on('disconnect', () => {
@@ -174,7 +179,7 @@ io.on('connect', (socket) => {
             while(i--){
                 if(activeClients[key][i] === socket.id){
                     activeClients[key].splice(i, 1);
-                    console.log(socket.id + " disconnected");
+                    console.log(socket.id + " disconnected: " + getTimestamp());
                 }    
             }
             // remove any empty arrays
@@ -670,6 +675,9 @@ function updateNotePage(req, res) {
     });
 }
 
+function getTimestamp() {
+	return new Date().toString();
+}
 
 // send a file
 function sendFile(res, filename, type) {
