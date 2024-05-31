@@ -155,11 +155,19 @@ app.get('/connectiontest', requireLogin, (req, res) => {
 
 app.all("*", (req, res, next) => {
 
-    var uri = url.parse(req.url);
-    var path = __dirname + '/dist/ENotes' + uri.pathname
+    let uri = url.parse(req.url);
+    let path = __dirname + '/dist/ENotes' + uri.pathname
+
+    // Extract the file type
+    let split = uri.pathname.split('.');
+    let fileType = split[split.length - 1];
+
+    if (fileType === "jpg") fileType = "image/jpg";
+    else if (fileType === "js") fileType = "text/javascript";
+    else fileType = "text/" + fileType;
 
     if(uri.pathname !== '/' && fs.existsSync(path)){
-        sendFile(res, path);
+        sendFile(res, path, fileType);
     }
     else{
         sendFile(res, __dirname + '/dist/ENotes/index.html');

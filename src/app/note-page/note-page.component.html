@@ -4,7 +4,7 @@
         <input type="image" src="assets/help.png" alt="Help" class="mainPageButton button" (click)="goToHelp()" />
         <input type="image" src="assets/refresh-icon.png" alt="Refresh" class="mainPageButton button" (click)="refresh()" />
         <input type="image" src="assets/gear.png" alt="Options" class="mainPageButton button" (click)="toggleOptions($event)" />
-        <app-options-menu [visible]="optionsVisible" (showAccountSettings)="showAccountSettings()"></app-options-menu>
+        <app-options-menu [visible]="optionsVisible" (showAccountSettings)="showAccountSettings()" style="display:none"> <!-- init as none to avoid flicer --></app-options-menu>
     </div>
 
 </h1>
@@ -23,7 +23,7 @@
 
 <app-right-click-menu [display]="rcmDisplay"></app-right-click-menu>
 
-<app-account-settings-page [(display)]="accountSettingsVisible"></app-account-settings-page>
+<app-account-settings-page [(display)]="accountSettingsVisible" style="display:none"></app-account-settings-page>
 
 
 
