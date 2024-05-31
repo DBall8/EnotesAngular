@@ -8,37 +8,55 @@ var http = require('http')
     , sessions = require('client-sessions')
 	, crypto = require('crypto')
 	, pg = require('pg')
-	, port = process.env.PORT || 443
+	, port = process.env.PORT || 8001
+	, secure = false
 
-
-if (process.env.DATABASE_URL){
-    var dbURL = process.env.DATABASE_URL;
-}
-else {
-    var dbURL = require(__dirname + '/secrets.js').dbURL
-}
+let SECRETS = require(__dirname + '/secrets.js');
 
 // open the database
-var db = new pg.Client(dbURL);
-db.connect().then(() => {
-    db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dfont VARCHAR(50), dfontsize INTEGER, dcolor VARCHAR(50))');
-db.query('CREATE TABLE IF NOT EXISTS notePages (pageid VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
-db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontsize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageid VARCHAR(100) REFERENCES notePages(pageid))');
-    console.log("Successfully connected to database. " + getTimestamp());
-}, (err) =>{
-    console.error("Failed to connect to database.")
-	console.error(err)
-})
+var db = new pg.Client(
+    {
+        user: SECRETS.dbUsername, 
+        password: SECRETS.dbPassword, 
+        host: '127.0.0.1',
+        port: '5432',
+        database: 'enotes',
+    }
+);
+
+db.connect()
+    .then(() => {
+        db.query('CREATE TABLE IF NOT EXISTS users (username VARCHAR(252) PRIMARY KEY, hash VARCHAR(252), salt VARCHAR(252), dfont VARCHAR(50), dfontsize INTEGER, dcolor VARCHAR(50))');
+        db.query('CREATE TABLE IF NOT EXISTS notePages (pageid VARCHAR(252) PRIMARY KEY, username VARCHAR(252) REFERENCES users(username), name VARCHAR(100), index INTEGER)');
+        db.query('CREATE TABLE IF NOT EXISTS notes (username VARCHAR(252) REFERENCES users(username), tag VARCHAR(252) PRIMARY KEY, title VARCHAR (100), content VARCHAR(4096), x INTEGER, y INTEGER, width INTEGER, height INTEGER, fontsize INTEGER, font VARCHAR(252), zindex INTEGER, colors VARCHAR(512), pageid VARCHAR(100) REFERENCES notePages(pageid))');
+        console.log("Successfully connected to database. " + getTimestamp());
+    })
+    .catch((err) => 
+    {
+        console.error("Failed to connect to database:");
+        console.error(err);
+    })
 
 var app = express();
-var server = https.createServer(
+var server;
+
+if (secure)
 {
-	ca: fs.readFileSync(__dirname + '/ssl/enotes_site.ca-bundle'),
-	key: fs.readFileSync(__dirname + '/ssl/enotes_site.key'),
-	cert: fs.readFileSync(__dirname + '/ssl/enotes_site.crt')
-}, app);
+	server = https.createServer(
+	{
+		ca: fs.readFileSync(__dirname + '/ssl/enotes_site.ca-bundle'),
+		key: fs.readFileSync(__dirname + '/ssl/enotes_site.key'),
+		cert: fs.readFileSync(__dirname + '/ssl/enotes_site.crt')
+	}, app);
+}
+else
+{
+	server = http.createServer(app);
+}
+
 var io = require('socket.io')(server);
 
+console.log("Encryption " + (process.env.SECRET_STR ? "ENABLED" : "DISABLED"));
 var secretStr = process.env.SECRET_STR ? process.env.SECRET_STR : "kuayborn98uno9y8vor8yaionvol ya";
 app.use(sessions({
     cookieName: 'session',
@@ -47,7 +65,7 @@ app.use(sessions({
     activeDuration: 3 * 24 * 60 * 60 * 1000,
 }));
 
-app.use(rHTTPS([/localhost:(\d{4})/], [/\/insecure/]));
+if (secure) app.use(rHTTPS([/localhost:(\d{4})/], [/\/insecure/]));
 
 app.use((req, res, next) => {
 
