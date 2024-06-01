@@ -222,6 +222,18 @@ server.listen(port, () => {
     console.log('Listening on :' + port);
 });
 
+function socketEmit(id, msgId, msg)
+{
+    let client = io.sockets.sockets.get(id);
+    if (!client)
+    {
+        console.error("Failed to emite on socket [" + id + "]");
+        return;
+    }
+
+    client.emit(msgId, msg);
+}
+
 function login(req, res) {
 
     // convert to json
@@ -439,7 +451,7 @@ function addNote(req, res) {
                     // Create a copy of the message received except without socketid
                     var emission = JSON.parse(JSON.stringify(input))
                     delete emission['socketid'];
-                    io.sockets.sockets[socketid].emit("create", JSON.stringify(emission));
+                    socketEmit(socketid, "create", JSON.stringify(emission));
                 }
             })
         }
@@ -475,7 +487,7 @@ function deleteNote(req, res){
             activeClients[req.user].map((socketid) => {
                 if (socketid != input.socketid) {
                     // Create a copy of the message received except without socketid
-                    io.sockets.sockets[socketid].emit("delete", input.tag);
+                    socketEmit(socketid, "delete", input.tag);
                 }
             })
         }
@@ -513,7 +525,7 @@ function updateNote(req, res){
                     // Create a copy of the message received except without socketid
                     var emission = JSON.parse(JSON.stringify(input))
                     delete emission['socketid'];
-                    io.sockets.sockets[socketid].emit("update", JSON.stringify(emission));
+                    socketEmit(socketid, "update", JSON.stringify(emission));
                 }
             })
         }
@@ -601,7 +613,7 @@ function addNotePage(req, res) {
                     // Create a copy of the message received except without socketid
                     var emission = JSON.parse(JSON.stringify(input))
                     delete emission['socketid'];
-                    io.sockets.sockets[socketid].emit("createpage", JSON.stringify(emission));
+                    socketEmit(socketid, "createpage", JSON.stringify(emission));
                 }
             })
         }
@@ -639,7 +651,7 @@ function deleteNotePage(req, res) {
                 activeClients[req.user].map((socketid) => {
                     if (socketid != input.socketid) {
                         // Create a copy of the message received except without socketid
-                        io.sockets.sockets[socketid].emit("deletepage", input.pageid);
+                        socketEmit(socketid, "deletepage", input.pageid);
                     }
                 })
             }
@@ -682,7 +694,7 @@ function updateNotePage(req, res) {
                     // Create a copy of the message received except without socketid
                     var emission = JSON.parse(JSON.stringify(input))
                     delete emission['socketid'];
-                    io.sockets.sockets[socketid].emit("updatepage", JSON.stringify(emission));
+                    socketEmit(socketid, "updatepage", JSON.stringify(emission));
                 }
             })
         }
